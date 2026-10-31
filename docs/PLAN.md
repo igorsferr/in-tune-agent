@@ -113,6 +113,8 @@ The plan is not to finish "as fast as possible". Phases are not merged before th
 
 **Review gate.** Before each merge, an independent reviewer looks at the PR diff with a fresh context and without the author's reasoning. The reviewer is a separate Claude session, read-only. It checks correctness, consistency with the brief and the data, commit hygiene and over-engineering. Findings are fixed as normal commits before the merge, and recurring lessons carry over to the next phase.
 
+**Freeze gate (set by Igor after the phase-3 confirmation).** From the commit that confirmed the decision cases on the delivered code (`evals/results/20261031-175528-*`), the prompt and the tools are frozen until submission. The phase-4 example conversations are generated from that commit, and each file records its hash. If an example shows a problem that needs a prompt or tool change, the change goes in only together with a fresh regression run and a fresh confirmation run, never as a standalone tweak.
+
 ## 8. Decision log
 
 Decisions are recorded here as they are made, each with its reason. The README summarises them.
