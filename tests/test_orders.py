@@ -30,11 +30,23 @@ def test_wrong_contact_and_unknown_order_look_the_same(store):
     assert check_order(store, 1, "(67) 99999-0000", TODAY) == NOT_FOUND
     assert check_order(store, 999, "(67) 98432-1098", TODAY) == NOT_FOUND
     assert check_order(store, 1, "", TODAY) == NOT_FOUND
+    assert check_order(store, 1, None, TODAY) == NOT_FOUND
 
 
-def test_shared_email_only_opens_its_own_customers_orders(store):
-    # bruno.martins@jmail.com belongs to customers 11 and 43; order 10 is customer 11's.
-    assert check_order(store, 10, "bruno.martins@jmail.com", TODAY)["found"]
+def test_a_shared_email_opens_no_order(store):
+    # bruno.martins@jmail.com belongs to customers 11 and 43, two different people.
+    # Order 10 is customer 11's: the e-mail alone must not open it for customer 43.
+    assert check_order(store, 10, "bruno.martins@jmail.com", TODAY) == NOT_FOUND
+    # Customer 11 can still verify with the phone on the order.
+    assert check_order(store, 10, "(67) 98543-2109", TODAY)["found"]
+    # Customer 43's phone does not open customer 11's order.
+    assert check_order(store, 10, "(67) 99456-3456", TODAY) == NOT_FOUND
+
+
+def test_not_found_result_is_a_fresh_copy(store):
+    first = check_order(store, 999, "x", TODAY)
+    first["annotated"] = True
+    assert "annotated" not in check_order(store, 999, "x", TODAY)
 
 
 def test_stored_total_is_reported_even_when_items_disagree(store):
@@ -51,7 +63,9 @@ def test_overdue_shipment_needs_a_human(store):
 
 def test_old_pending_order_is_stalled_but_a_fresh_one_is_not(store):
     assert check_order(store, 13, "(67) 99456-7890", TODAY)["needs_human"].startswith("stalled")
-    assert "needs_human" not in check_order(store, 13, "(67) 99456-7890", date(2026, 3, 15))
+    # Order 13 was placed on 2026-03-12: 7 days waiting is fine, 8 is stalled.
+    assert "needs_human" not in check_order(store, 13, "(67) 99456-7890", date(2026, 3, 19))
+    assert "needs_human" in check_order(store, 13, "(67) 99456-7890", date(2026, 3, 20))
 
 
 def test_cancelled_order_explains_why(store):

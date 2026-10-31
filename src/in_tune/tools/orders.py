@@ -11,16 +11,26 @@ from in_tune.store import Store
 STALLED_AFTER_DAYS = 7
 NOT_FOUND = {
     "found": False,
-    "message": "No order matches this number and contact. Ask the customer to check both.",
+    "message": (
+        "No order matches this number and contact. Ask the customer to check both, "
+        "or to use the phone number registered on the order."
+    ),
 }
 
 
-def _owns(store: Store, customer_id: int, contact: str) -> bool:
-    customer = store.customers[customer_id]
-    contact = contact.strip()
+def _owns(store: Store, customer_id: int, contact: str | None) -> bool:
+    contact = (contact or "").strip()
     if "@" in contact:
-        return contact.casefold() == customer.email.casefold()
-    return bool(phone_digits(contact)) and phone_digits(contact) == phone_digits(customer.phone)
+        # An e-mail identifies a customer only if no one else uses it
+        # (bruno.martins@jmail.com belongs to two people, DATA_AUDIT #10).
+        holders = [
+            c.customer_id
+            for c in store.customers.values()
+            if c.email.casefold() == contact.casefold()
+        ]
+        return holders == [customer_id]
+    digits = phone_digits(contact)
+    return bool(digits) and digits == phone_digits(store.customers[customer_id].phone)
 
 
 def _attention(order, today: date) -> str | None:
@@ -34,7 +44,7 @@ def _attention(order, today: date) -> str | None:
     return None
 
 
-def check_order(store: Store, order_id: int, contact: str, today: date) -> dict:
+def check_order(store: Store, order_id: int, contact: str | None, today: date) -> dict:
     """Status of an order, after checking the phone or e-mail belongs to its customer.
 
     A wrong number and a wrong contact get the same answer, so the tool never
@@ -42,7 +52,7 @@ def check_order(store: Store, order_id: int, contact: str, today: date) -> dict:
     """
     order = store.orders.get(order_id)
     if order is None or not _owns(store, order.customer_id, contact):
-        return NOT_FOUND
+        return dict(NOT_FOUND)
 
     result = {
         "found": True,
