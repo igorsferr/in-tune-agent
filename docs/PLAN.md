@@ -10,18 +10,18 @@ Artefact AI Engineer technical case. Written 2026-10-31, before any code.
 The store's team answers the same questions all day: opening hours, order status, prices and stock.
 The goal is a **text-message agent in Python** that helps the team by answering customers. It must:
 
-1. speak with the store's persona ("informal but professional, like a friend who knows music", policy §7.1);
+1. speak with the store's persona ("informal mas profissional", like "um amigo que entende de música", policy §7.1);
 2. answer **only** from the provided context;
 3. know **when to query data** (catalog, stock, prices, promotions, orders) and **when to consult policy** (returns, hours, payment, shipping, warranty);
 4. handle out-of-scope requests gracefully. The store sells instruments only.
 
-The brief asks for "the simplest way possible" and evaluates logic, clarity and initiative over a perfect solution. **Simplicity is a requirement, not a shortcut.**
+The brief evaluates logic, clarity and initiative, and how decisions are made, more than a perfect solution. The recruiter's e-mail adds: solve it "in the simplest way possible". **Simplicity is a requirement, not a shortcut.**
 
 ## 2. Guiding principle: in tune, never off-key
 
 > The agent never states a price, stock level, promotion, deadline or order status that did not come from a tool call in the same turn.
 
-This comes straight from the store manual (§7.1). It is also the main reliability property of the design, and the evals measure it.
+This comes straight from the store manual: §7.1 for prices, stock and deadlines, and §7.3 for promotions ("verificar se ela encontra-se ativa no sistema"). It is also the main reliability property of the design, and the evals measure it.
 
 ## 3. Architecture
 
@@ -31,7 +31,7 @@ customer ─▶ CLI ─▶ agent loop (Claude, tool use) ─▶ Python tools ─
 
 - **Deterministic tools for structured data.** Filtering, discounts and installment rules are plain Python: testable and unable to hallucinate.
   The 7 tools are `search_products`, `get_product`, `check_order`, `quote_payment`, `get_policy`, `store_status` and `handoff_to_human`.
-- **Policy retrieval by section.** The 8-page manual is split into its numbered sections. The agent asks for the section it needs, so every policy lookup is visible and testable.
+- **Policy retrieval by section.** The 8-page manual is split into its numbered sections, and the agent asks for the one it needs (decision log, §8).
 - **A hand-written tool-use loop of about 60 lines.** It uses the Anthropic SDK directly, with no agent framework, so every decision under evaluation stays explainable line by line.
 - **Deliberately not used:**
   - a SQL agent (model-written SQL over customer data, for 6 small tables);
@@ -44,31 +44,36 @@ customer ─▶ CLI ─▶ agent loop (Claude, tool use) ─▶ Python tools ─
 
 | Situation | Rule |
 |---|---|
-| Name, description and specs disagree (products 135–144) | Structured fields win. The tool flags the conflict, and the agent does not confirm that attribute; it offers to check with the team. |
+| Name, description and specs disagree | Detected per attribute (brand, strings, keys, wood); today it affects 7 products. Structured fields win. The tool flags the conflict, and the agent does not confirm that attribute; it offers to check with the team. |
 | `status` vs stock | Sellable = `active` and stock > 0. `coming_soon` → arriving soon, not sellable. `discontinued` → suggest equivalents. `active` with 0 stock → temporarily unavailable, suggest alternatives. |
-| Promotions | Only active ones. Show original price, % off and final price. The 5% PIX discount does not stack on promotions. Never promise inactive campaigns (e.g. Black Friday). |
+| Promotions | Only active ones, at the data's percentage. Show original price, % off and final price. The 5% PIX discount does not stack on promotions. Never promise inactive campaigns (e.g. Black Friday). |
 | Order totals | Report the stored total; never recompute it (line items have no unit price). |
-| Order status | Only shown when the order id matches the customer's phone or e-mail; otherwise a generic "not found" (LGPD). Overdue or stalled orders go to a human. |
-| Installments | The detailed rules (§3.1) win over the summary table (§3). |
-| Contact data | Phone (67) 3341-4444; WhatsApp (67) 3321-4500; the unaccented e-mail address. |
-| Shipping outside the metro area, partner stores, holidays | Not in the data, so the agent says so and never invents an answer. |
+| Order status | Only shown when the order id matches the customer's phone or e-mail; otherwise a generic "not found". Overdue or stalled orders go to a human. |
+| Installments | The detailed rules (§3.1) win over the summary table (§3): 2–3× ≥ R$ 50, 4–6× ≥ R$ 80, 7–12× ≥ R$ 100 per installment. Mixed payment only above R$ 2,000. |
+| Contact data | Phone (67) 3341-4444 (§1.2). WhatsApp (67) 3321-4500 (§7, the WhatsApp section: the more specific section wins, as with installments). The unaccented e-mail address. |
+| Shipping | Metro area: free from R$ 500 (exactly R$ 500 read in the customer's favour), otherwise R$ 35, 1–3 business days. Elsewhere: delivery times from §5.2 are given; the cost depends on the CEP and is not quoted. |
+| Complaints, data deletion | Handed off to a human; complaints get the §7.3 return time of 24 business hours. |
+| Holidays | `store_status` knows the 2026 national holidays (e.g. 2026-11-02, 11-15, 11-20, 12-25); municipal holidays are not in the data, so the agent does not promise them. |
+| Partner stores, freight cost tables | Not in the data, so the agent says so and never invents an answer. |
 
 **Time.** The agent reads the real Campo Grande clock through `store_status`. Tests and evals inject a fixed time, so results are reproducible.
 
 ## 5. Quality
 
 - **Unit tests** (pytest, no API key) for every tool and rule above. CI runs them with ruff on every push.
-- **About 20 eval cases** covering catalog, prices, orders, policy, out of scope and the data pitfalls. Each case lists the expected tool and the facts that must or must not appear.
-- **Grounding check:** every R$ value in an answer must appear in that turn's tool results.
+- **About 20 eval cases** covering catalog, prices, orders, policy, out of scope and the data pitfalls. They start from the brief's four sample questions. Each case lists the expected tool and the facts that must or must not appear.
+- **Grounding check:** every R$ value in an answer must appear in that turn's tool results. Values are normalised first, so `799.9` matches "R$ 799,90".
 - **Model choice by numbers:** Claude Haiku 5.5, Sonnet 5.5 and Opus 5.5 on the same eval set, compared on pass rate, grounding, latency and cost.
 
 ## 6. Stack and layout
 
-Python ≥3.11 · `anthropic` · `pydantic` · `rich` · `python-dotenv` · `pyyaml` · `pypdf` (policy extraction only) · `pytest` · `ruff` · `uv`.
+Runtime: Python ≥3.11 · `anthropic` · `pydantic` (tool input schemas and validation) · `python-dotenv` (optional `.env`).
+Tooling: `pypdf` (one-off policy extraction script) · `pytest` · `ruff` · `uv`.
+The CLI and the eval cases use the standard library only.
 
 ```
 in-tune-agent/
-├── README.md              # run it, decisions, limitations, AI workflow, eval results
+├── README.md              # run it, decisions, prompt strategy, limitations, AI workflow, eval results
 ├── data/                  # CSVs + policy PDF as provided; extracted policy sections
 ├── src/in_tune/           # store, tools, prompts, agent loop, CLI
 ├── tests/
@@ -79,41 +84,44 @@ in-tune-agent/
 
 ## 7. Phases (one issue and one PR each)
 
-**Target: submit on Sunday 01/11 by 22:00.** That leaves about two days of slack before the earliest plausible deadline. Monday is reserved for emergencies only, with an internal hard limit of **Monday 12:00**, still 1.5 days early.
+**Target: submit on 2026-11-01 (Sunday) by 22:00.** That leaves about two days of slack before the earliest plausible deadline. Monday is reserved for emergencies only, with an internal hard limit of **2026-11-02 12:00**, still 1.5 days early.
 
 | # | Phase | Done when | When |
 |---|---|---|---|
-| 0 | Plan and scaffold | Docs committed; project installs; CI green | Sat 31/10, afternoon |
-| 1 | Data and tools | Data loads with conflicts flagged; all tools tested against §4 | Sat 31/10, evening |
-| 2 | Agent and CLI | A working chat end to end; persona; out-of-scope handling; handoff | Sun 01/11, morning |
-| 3 | Evals and model choice | Eval runner; the three models compared; fixes driven by results | Sun 01/11, afternoon |
-| 4 | Docs, examples, final review | README complete; 3–5 examples; process log closed; submitted | Sun 01/11, by 22:00 |
+| 0 | Plan and scaffold | Docs committed; project installs; CI green | 2026-10-31, afternoon |
+| 1 | Data and tools | Data loads with conflicts flagged; all tools tested against §4 | 2026-10-31, evening |
+| 2 | Agent and CLI | A working chat end to end; persona; out-of-scope handling; handoff | 2026-11-01, morning |
+| 3 | Evals and model choice | Eval runner; the three models compared; fixes driven by results | 2026-11-01, afternoon |
+| 4 | Docs, examples, final review | README complete; 3–5 examples; process log closed; submitted | 2026-11-01, by 22:00 |
 
-The plan is not to finish "as fast as possible". Phases are not merged before their tests and their review pass. If a phase needs more time, the submission slides toward Monday 12:00, never past it.
+The plan is not to finish "as fast as possible". Phases are not merged before their tests and their review pass. If a phase needs more time, the submission slides toward the Monday limit, never past it.
 
-**Review gate.** Before each merge, an independent reviewer looks at the PR diff with a fresh context and without the author's reasoning. The reviewer is a separate Claude session, read-only. It checks correctness, consistency with this plan, commit hygiene and over-engineering. Findings are fixed as normal commits before the merge, and recurring lessons carry over to the next phase.
+**Review gate.** Before each merge, an independent reviewer looks at the PR diff with a fresh context and without the author's reasoning. The reviewer is a separate Claude session, read-only. It checks correctness, consistency with the brief and the data, commit hygiene and over-engineering. Findings are fixed as normal commits before the merge, and recurring lessons carry over to the next phase.
 
 ## 8. Decision log
 
-Decisions are recorded here as they are made, each with a one-line reason. The README summarises them.
+Decisions are recorded here as they are made, each with its reason. The README summarises them.
 
 | Decision | Choice | Why |
 |---|---|---|
 | Agent approach | Hand-written tool-use loop, deterministic tools | Simplest design that answers from data; no hidden behaviour |
-| Policy access | Tool returning a manual section | Exact, observable, testable; RAG only pays off for a larger manual |
+| Policy access | Tool returning a manual section | The simplest alternative, the whole manual (~3–4k tokens) in a cached system prompt, would work at this size. We chose the tool because the brief evaluates knowing *when* to consult policy, and a tool call makes that observable and testable. The risk (the agent answering without calling it) is measured by the evals. |
 | Conflicting data | Structured fields win; conflicts flagged, never confirmed | Avoids stating what the store cannot guarantee |
-| Provider | Anthropic, paid key | Free tiers that train on content conflict with LGPD; Haiku-class cost is cents per eval run |
+| Prompt strategy | A stable system prompt holding the persona, the rules of §2 and §4 as short directives, and when to use each tool. No facts in the prompt: every fact comes from a tool. Refined in phase 2 against the evals. | Keeps answers grounded and the prompt cacheable |
+| Conversation history | Kept in memory for the session only, no persistence | A CLI run is one customer conversation; persisting it would retain personal data with no benefit for the case |
+| Provider | Anthropic, paid key | Free tiers that train on content conflict with LGPD; a Haiku-class model costs cents per eval run |
 | Model | Decided in phase 3 from eval results | Choice by evidence, not preference |
 | Interface | CLI | The brief's focus is the agent working |
-| Customer verification | Order id + phone or e-mail | Minimum check that keeps order data private |
+| Customer verification | Order id + phone or e-mail | Minimum check that keeps order data private (one e-mail is shared by two customers) |
+| Data in the repository | The provided CSVs and policy PDF are committed under `data/` | The project runs right after cloning. The data is fictional and was provided for this case, although the manual's footer says "Documento interno — Uso restrito". |
 
 ## 9. Assumptions
 
-- The repository is the deliverable. A PDF with its link is submitted through the form named in the e-mail.
-- **Deadline:** no plausible reading of the e-mail lands before 2026-11-03, 23:59 (it could be 11-04 if the 11-02 holiday is excluded). We plan as if the deadline were Monday noon and aim to submit Sunday 22:00. The repository is not changed after submission.
+- The repository is the deliverable. A PDF with its link is submitted through the form named in the recruiter's e-mail.
+- **Deadline:** no plausible reading of the e-mail lands before 2026-11-03 23:59. That reading counts the 2026-11-02 holiday as a business day; excluding the holiday gives 11-04. We plan as if the deadline were 2026-11-02 12:00 and aim to submit on 2026-11-01 at 22:00. The repository is not changed after submission.
 - Docs, commits and PRs are in English. The agent speaks Brazilian Portuguese.
 - The data is a fixed snapshot. The agent reads it and never writes orders or stock.
 
 ## 10. With more time (kept out on purpose)
 
-A web UI, embeddings-based retrieval for a larger manual, a cross-provider model comparison, persistent conversation history, and a real ticketing integration for handoffs.
+A web UI, embeddings-based retrieval for a larger manual, a cross-provider model comparison, persistent conversation history, municipal holidays and a real ticketing integration for handoffs.
