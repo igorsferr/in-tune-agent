@@ -37,17 +37,31 @@ def _haystack(store: Store, product: Product) -> str:
 def _correct_spelling(store: Store, query: str) -> str:
     """Replace words found nowhere in the catalog by the closest catalog word
     ("takamini" -> "takamine", "ukelele" -> "ukulele"). Used only when the query
-    as typed matches nothing."""
+    as typed matches nothing.
+
+    Words with a digit are model codes, and a code one character away is a
+    different product ("314ce" is not the "214ce"), so they are never changed.
+    """
     text = " ".join(_haystack(store, p) for p in store.products.values())
     vocabulary = sorted(set(text.split()))
     words = []
     for word in _key(query).split():
-        if word in text or word.isdigit():
+        if word in text or any(c.isdigit() for c in word):
             words.append(word)
             continue
-        close = difflib.get_close_matches(word, vocabulary, n=1, cutoff=0.8)
+        close = difflib.get_close_matches(word, vocabulary, n=1, cutoff=0.85)
         words.append(close[0] if close else word)
     return " ".join(words)
+
+
+def _similar_names(store: Store, name: str) -> list[str]:
+    """Product names that start like the query, for a "did you mean" question."""
+    query = _key(name)
+    scored = [
+        (difflib.SequenceMatcher(None, query, _key(p.name)[: len(query) + 2]).ratio(), p.name)
+        for p in store.products.values()
+    ]
+    return [n for score, n in sorted(scored, reverse=True)[:3] if score >= 0.75]
 
 
 def availability(product: Product) -> str:
@@ -183,14 +197,21 @@ def get_product(store: Store, product_id: int | None = None, name: str | None = 
                 candidates = _by_name(store, corrected)
                 note = f"nothing matched {name!r}; showing results for {corrected!r}"
     if not candidates:
-        return {"found": False}
+        result = {"found": False}
+        if name and (similar := _similar_names(store, name)):
+            # Names only: a near miss may be another product, so ask before quoting.
+            result["did_you_mean"] = similar
+        return result
     if len(candidates) > 1:
-        return {
+        result = {
             "found": False,
             "ambiguous": True,
             "message": "Several products match; ask the customer which one.",
             "candidates": [card(store, p) for p in candidates[:5]],
         }
+        if note:
+            result["note"] = note
+        return result
 
     product = candidates[0]
     result = {"found": True, **card(store, product)}

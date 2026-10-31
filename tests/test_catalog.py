@@ -138,3 +138,24 @@ def test_correct_spelling_is_left_alone(store):
 def test_nonsense_is_still_not_found(store):
     assert get_product(store, name="xyzzy 3000")["found"] is False
     assert search_products(store, query="xyzzy")["total_matches"] == 0
+
+
+@pytest.mark.parametrize(
+    ("name", "suggested"),
+    [
+        ("Taylor 314ce", "Taylor 214ce Elétrico Aço Natural"),
+        ("Kala KA-16S", "Kala KA-15S Soprano Mogno"),
+        ("Shelby SU-22S", "Shelby SU-21S Soprano Sunburst"),
+    ],
+)
+def test_a_model_code_is_never_swapped_for_another_product(store, name, suggested):
+    # The store doesn't sell these models; the nearest code is a different product.
+    product = get_product(store, name=name)
+    assert product["found"] is False
+    assert suggested in product["did_you_mean"]
+    assert "price" not in product  # no price quoted for a guess
+
+
+def test_an_instrument_the_store_lacks_is_not_turned_into_another(store):
+    assert search_products(store, query="violinos")["total_matches"] == 0
+    assert get_product(store, name="violino")["found"] is False
