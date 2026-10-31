@@ -109,6 +109,8 @@ in-tune-agent/
 
 The plan is not to finish "as fast as possible". Phases are not merged before their tests and their review pass. If a phase needs more time, the submission slides toward the Monday limit, never past it.
 
+**Human review gate.** Every output of the model that a customer would see (conversation transcripts, eval results, the model choice, the README examples) is read by Igor before it is merged or submitted. Automated checks catch what was foreseen; a human reading catches tone, implicit promises and what nobody thought to test. Each reading, and what it found, is recorded in `PROCESS_LOG.md` after it happens.
+
 **Review gate.** Before each merge, an independent reviewer looks at the PR diff with a fresh context and without the author's reasoning. The reviewer is a separate Claude session, read-only. It checks correctness, consistency with the brief and the data, commit hygiene and over-engineering. Findings are fixed as normal commits before the merge, and recurring lessons carry over to the next phase.
 
 ## 8. Decision log

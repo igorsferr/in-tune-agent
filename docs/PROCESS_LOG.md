@@ -151,3 +151,11 @@ Lessons carried forward:
 3. A prompt rule that depends on a tool names the tool.
 4. Evidence that isn't committed doesn't exist for the reader.
 5. Measure what is billed (cache writes included) before comparing costs.
+
+### 15. Igor reads the transcript
+Igor read the 12 committed conversations (`evals/runs/20261031-1612-claude-opus-5-5.md`). He found two problems that no test had covered:
+
+1. **An unsupported promise.** After the overdue-order handoff, the store agent said the team "will contact you by phone". The manual mentions a team return in one place only: §7.3, which covers complaints and says "Prazo de retorno: 24 horas úteis", with no channel. Igor's rule is that the case decides, so nothing outside it is promised.
+2. **The test messages were too clean.** Real customers write with typos, without accents, with abbreviations, and with the wrong name for an instrument. A quick check confirmed it: the tools found "Takamine GD20" and "takamine gd 20", but not "takamini gd20", "Takamine GD-20" or "ukelele".
+
+From now on, every model output a customer would see passes a human reading before merge (`PLAN.md` §7). Both findings open phase 3: first as eval cases that must fail, then as fixes.
