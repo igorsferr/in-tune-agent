@@ -39,7 +39,9 @@ def main(argv: list[str] | None = None) -> int:
     load_dotenv()
     sys.stdout.reconfigure(encoding="utf-8")
     args = _parse_args(argv)
-    now = args.now.replace(tzinfo=TZ) if args.now and args.now.tzinfo is None else args.now
+    now = None
+    if args.now:  # read as Campo Grande time; an explicit offset is converted to it
+        now = args.now.replace(tzinfo=TZ) if args.now.tzinfo is None else args.now.astimezone(TZ)
     clock = (lambda: now) if now else (lambda: datetime.now(TZ))
 
     policies = Policies()
@@ -56,9 +58,15 @@ def main(argv: list[str] | None = None) -> int:
             continue
         if text.casefold() in {"sair", "exit", "quit"}:
             return 0
+        print("Empório está digitando…", end="\r", flush=True)
         try:
             reply = agent.send(text)
-        except TypeError as e:  # raised by the SDK when no credential is configured
+        except KeyboardInterrupt:
+            print()
+            return 0
+        except TypeError as e:
+            # The SDK raises TypeError("Could not resolve authentication method...")
+            # when no credential is configured at all; tests pin that message.
             if "authentication" not in str(e):
                 raise
             print(NO_KEY)
