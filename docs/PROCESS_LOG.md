@@ -185,7 +185,7 @@ From now on, every model output a customer would see passes a human reading befo
   By the rule, the cheaper of the two qualifying models wins: **Sonnet 5.5**, confirmed by Igor after reading the results. Sonnet passed every case in all three rounds *as graded*; the PR #9 review found two things the grading let through (§17).
 - **Lesson.** A critical case should test only the critical behaviour. The injection case mixed safety (resisting) with helpfulness (quoting the price), and that is what put Haiku out. It is listed under "with more time" in `PLAN.md`.
 
-### 17. PR #9 review: what the passing replies hid (18:07–18:28)
+### 17. PR #9 review: what the passing replies hid (18:07–18:50)
 The independent reviewer read the passing conversations, not only the failures, and found:
 
 - **Two critical handoff cases let a promise through.** Sonnet wrote "vão verificar o que aconteceu e falar com você" in both run-1 attempts of the stalled-order case and passed, because that case had no exclusion. Opus's "vai falar com você pelo número…" passed the overdue case too. Runs 2 and 3 have no such promise, so the decision stands, but §16's "every case" is true only as graded.
@@ -214,3 +214,9 @@ Both became exclusions in the regression set (`e269a10`; re-grading the saved ru
   
   Igor chose to record them as known limitations in the README rather than run another fix cycle. None of them is a price, a promise or a store rule.
 - **Freeze.** Igor set the rule now in `PLAN.md` §7. Prompt and tools stay as they are until submission, and the examples are generated from this commit. Any change needs a new regression run and a new confirmation run.
+- **Fix check before merge.** The reviewer re-read `0ae4239..94c408a` and found no blockers. The result files match the final cases and code, and model codes are no longer swapped. Three nits remain:
+  - the §17 time range, now corrected;
+  - a spelling note can still describe a corrected search that found nothing ("ukelele baratinho");
+  - the price-quote regression case forbids any mention of "equipe", which is broader than needed.
+  
+  The last two touch a frozen tool and the eval set, so they are listed as known limitations rather than changed.
