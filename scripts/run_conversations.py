@@ -92,7 +92,7 @@ def provenance(model: str, effort: str) -> str:
         f"src tree `{git('rev-parse', '--short', 'HEAD:src')}` · "
         f"data tree `{git('rev-parse', '--short', 'HEAD:data')}`{dirty} · "
         f"store clock fixed at {NOW:%Y-%m-%d %H:%M} (Campo Grande) · "
-        f"run at {datetime.now(TZ):%Y-%m-%d %H:%M}"
+        f"run at {datetime.now(TZ):%Y-%m-%d %H:%M} (Campo Grande)"
     )
 
 

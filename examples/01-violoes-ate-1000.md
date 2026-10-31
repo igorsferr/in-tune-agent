@@ -1,6 +1,6 @@
 # Example: 01-violoes-ate-1000
 
-Model `claude-sonnet-5-5`, effort medium · commit `79e11fe` · src tree `f8476c1` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-10-31 18:13
+Model `claude-sonnet-5-5`, effort medium · commit `79e11fe` · src tree `f8476c1` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-10-31 18:13 (Campo Grande)
 
 **Cliente:** Quais opções de violões disponíveis custando até R$1000?
 
