@@ -186,7 +186,8 @@ def main() -> None:
         summaries.append(summarise(model, runs))
         path = out / f"{stamp}-{model}-{args.effort}.json"
         payload = {"model": model, "effort": args.effort, "runs": runs}
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+        text = json.dumps(payload, ensure_ascii=False, indent=1)
+        path.write_text(text, encoding="utf-8", newline="\n")
 
     summary_path = out / f"{stamp}-summary.md"
     summary_path.write_text(report(summaries, all_runs, stamp), encoding="utf-8", newline="\n")
