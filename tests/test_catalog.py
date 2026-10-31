@@ -159,3 +159,16 @@ def test_a_model_code_is_never_swapped_for_another_product(store, name, suggeste
 def test_an_instrument_the_store_lacks_is_not_turned_into_another(store):
     assert search_products(store, query="violinos")["total_matches"] == 0
     assert get_product(store, name="violino")["found"] is False
+
+
+def test_an_empty_search_lists_only_categories_that_have_products(store):
+    offered = search_products(store, query="violino")["categories_with_products"]
+    assert offered == [
+        "Guitarras",
+        "Baixos",
+        "Baterias e Percussão",
+        "Teclados e Pianos",
+        "Violões",
+        "Ukuleles",
+    ]
+    assert "categories_with_products" not in search_products(store, query="Takamine")

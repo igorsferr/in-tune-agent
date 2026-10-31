@@ -141,6 +141,13 @@ def search_products(store: Store, query: str | None = None, **filters) -> dict:
         if corrected != _key(query):
             found = _search(store, corrected, **filters)
             found["note"] = f"nothing matched {query!r}; showing results for {corrected!r}"
+    if found.get("total_matches") == 0:
+        # Something true to offer instead: several catalog categories are empty.
+        found["categories_with_products"] = [
+            c.name
+            for cid, c in store.categories.items()
+            if any(p.category_id == cid and p.sellable for p in store.products.values())
+        ]
     return found
 
 
