@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.pdf binary
+# Provided files are kept byte-identical to what the store sent
+data/raw/** -text
