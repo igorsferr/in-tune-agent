@@ -344,7 +344,7 @@
         "nao (temos|tenho|trabalhamos|vendemos|encontrei|achei)"
       ],
       "exclude": [
-        "temos (sim )?cavaquinho"
+        "(?<!nao )temos (sim )?cavaquinho"
       ]
     },
     {
