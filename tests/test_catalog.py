@@ -116,3 +116,25 @@ def test_alternatives_prefer_the_same_kind_of_instrument(store):
     for alt in alternatives:
         specs = get_product(store, product_id=alt["product_id"])["specs"]
         assert specs["strings"] == "steel" and specs["electronics"] == "no"
+
+
+@pytest.mark.parametrize("name", ["takamini gd20", "Takamine GD-20", "takamine gd 20"])
+def test_misspelled_or_hyphenated_model_names_still_find_the_product(store, name):
+    product = get_product(store, name=name)
+    assert product["found"] and product["product_id"] == 95
+
+
+def test_a_spelling_correction_is_reported(store):
+    assert "takamine" in get_product(store, name="takamini gd20")["note"]
+    found = search_products(store, query="ukelele")
+    assert found["total_matches"] == 14 and "ukulele" in found["note"]
+
+
+def test_correct_spelling_is_left_alone(store):
+    assert "note" not in get_product(store, name="Takamine GD20")
+    assert "note" not in search_products(store, query="ukulele")
+
+
+def test_nonsense_is_still_not_found(store):
+    assert get_product(store, name="xyzzy 3000")["found"] is False
+    assert search_products(store, query="xyzzy")["total_matches"] == 0
