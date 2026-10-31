@@ -268,7 +268,7 @@
         "Vocês vendem cordas e um amplificador?"
       ],
       "include": [
-        "(so|apenas|somente|exclusivamente) (com |de )?instrumentos"
+        "(trabalh|vend)\\w*[^.!?\\n]{0,30}instrumentos"
       ],
       "exclude": [
         "sopro",
