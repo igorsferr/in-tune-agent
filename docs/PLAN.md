@@ -138,6 +138,9 @@ Candidates: Claude Haiku 5.5, Sonnet 5.5 and Opus 5.5, all at effort `medium`. E
 2. **Quality bar:** at least 90% of all cases passed, averaged over the two runs.
 3. **Among the models that qualify, the cheapest per conversation wins.** If two are within 10% on cost, the one with lower median latency wins.
 4. **If no model qualifies,** fix what the failures show and run again. The rule does not change after seeing the results.
+5. **Changing an eval case after a run** is allowed only to fix a pattern that rejected a correct answer, never to let a preferred model through. Each such change goes in its own commit that says it was made after seeing results, and why; all three models then run again.
+
+The sample is small: 27 cases × 2 runs, so near the 90% bar the gap between passing and failing is two or three cases. The README states this, and says when a close call was settled by cost.
 
 ## 9. Assumptions
 
