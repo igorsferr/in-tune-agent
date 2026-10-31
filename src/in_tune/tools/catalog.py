@@ -52,7 +52,7 @@ def card(store: Store, product: Product) -> dict:
             "discount": f"{promo.discount_percent}%",
             "final_price": brl(final_price(store, product)),
         }
-    else:
+    elif product.sellable:
         result["pix_price"] = brl(product.price_brl * (1 - PIX_DISCOUNT))
     if found := conflicts(product):
         result["data_warnings"] = found
@@ -69,6 +69,17 @@ def _matches(product: Product, store: Store, query: str) -> bool:
     return all(token in haystack for token in _fold(query).split())
 
 
+def _names_match(product: Product, query: str) -> bool:
+    """Every query word is a whole word of the product name ("D-28" is not "D-28E")."""
+    words = _fold(product.name).split()
+    return all(token in words for token in _fold(query).split())
+
+
+def _category_id(store: Store, category: str) -> int | None:
+    folded = _fold(category)
+    return next((cid for cid, c in store.categories.items() if _fold(c.name) == folded), None)
+
+
 def search_products(
     store: Store,
     query: str | None = None,
@@ -81,13 +92,20 @@ def search_products(
     """Products matching every given filter, cheapest first.
 
     Price filters apply to the price the customer pays (promotion included).
+    An unknown category is an error listing the valid ones, never "no results".
     """
+    category_id = _category_id(store, category) if category else None
+    if category and category_id is None:
+        return {
+            "error": f"unknown category {category!r}",
+            "available_categories": [c.name for c in store.categories.values()],
+        }
     results = []
     for product in store.products.values():
         price = final_price(store, product)
         if available_only and not product.sellable:
             continue
-        if category and _fold(category) != _fold(store.categories[product.category_id].name):
+        if category_id is not None and product.category_id != category_id:
             continue
         if min_price is not None and price < Decimal(str(min_price)):
             continue
@@ -110,10 +128,18 @@ def get_product(store: Store, product_id: int | None = None, name: str | None = 
         candidates = [store.products[product_id]] if product_id in store.products else []
     else:
         candidates = [p for p in store.products.values() if name and _matches(p, store, name)]
+        # Prefer products whose name holds every word asked for.
+        exact = [p for p in candidates if _names_match(p, name)]
+        candidates = exact or candidates
     if not candidates:
         return {"found": False}
     if len(candidates) > 1:
-        return {"found": False, "ambiguous": [card(store, p) for p in candidates[:5]]}
+        return {
+            "found": False,
+            "ambiguous": True,
+            "message": "Several products match; ask the customer which one.",
+            "candidates": [card(store, p) for p in candidates[:5]],
+        }
 
     product = candidates[0]
     result = {"found": True, **card(store, product)}
@@ -125,6 +151,14 @@ def get_product(store: Store, product_id: int | None = None, name: str | None = 
             for p in store.products.values()
             if p.category_id == product.category_id and p.sellable
         ]
-        same_category.sort(key=lambda p: abs(final_price(store, p) - product.price_brl))
+        # Most similar first (§7.3 "alternativas semelhantes"): same string type
+        # and electronics, then the closest price.
+        same_category.sort(
+            key=lambda p: (
+                p.specs.get("strings") != product.specs.get("strings"),
+                p.specs.get("electronics") != product.specs.get("electronics"),
+                abs(final_price(store, p) - product.price_brl),
+            )
+        )
         result["alternatives"] = [card(store, p) for p in same_category[:3]]
     return result

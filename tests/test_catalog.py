@@ -66,10 +66,46 @@ def test_empty_category_returns_nothing(store):
     assert search_products(store, category="Cordas Orquestrais")["total_matches"] == 0
 
 
+def test_unknown_category_is_an_error_not_an_empty_shelf(store):
+    for category in ("Violão", "guitarra", "Guitars"):
+        found = search_products(store, category=category)
+        assert "error" in found
+        assert "Violões" in found["available_categories"]
+
+
+def test_category_ignores_accents_and_case(store):
+    # 35 acoustic guitars, minus 96 (out of stock) and 113 (discontinued).
+    assert search_products(store, category="VIOLOES")["total_matches"] == 33
+
+
 def test_search_ignores_accents_and_case(store):
-    assert search_products(store, query="VIOLAO 7 cordas")["total_matches"] == 4
+    accented = search_products(store, query="Giannini Violão")
+    plain = search_products(store, query="giannini VIOLAO")
+    assert accented == plain
+    assert {r["product_id"] for r in plain["results"]} == {84, 88, 101, 110}
+
+
+def test_a_full_model_name_finds_that_product_only(store):
+    # "D-28" must not also match the "D-28E".
+    assert get_product(store, name="Martin D-28")["product_id"] == 93
+    assert get_product(store, name="Martin D-28E")["product_id"] == 108
 
 
 def test_unknown_and_ambiguous_names(store):
     assert get_product(store, name="Steinway")["found"] is False
-    assert len(get_product(store, name="Martin D-28")["ambiguous"]) == 2
+    ambiguous = get_product(store, name="Martin")
+    assert ambiguous["ambiguous"] is True
+    assert {c["product_id"] for c in ambiguous["candidates"]} == {93, 108}
+
+
+def test_no_pix_price_for_products_that_cannot_be_bought(store):
+    assert "pix_price" not in get_product(store, product_id=113)  # discontinued
+    assert "pix_price" not in get_product(store, product_id=96)  # out of stock
+
+
+def test_alternatives_prefer_the_same_kind_of_instrument(store):
+    # 96 is a steel-string acoustic without electronics.
+    alternatives = get_product(store, product_id=96)["alternatives"]
+    for alt in alternatives:
+        specs = get_product(store, product_id=alt["product_id"])["specs"]
+        assert specs["strings"] == "steel" and specs["electronics"] == "no"
