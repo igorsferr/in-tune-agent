@@ -1,6 +1,7 @@
 """Run the eval set against one or more models and report quality, latency and cost.
 
     uv run python evals/run_evals.py --models claude-haiku-5-5,claude-sonnet-5-5 --repeat 2
+    uv run python evals/run_evals.py --cases evals/regression.json --models claude-sonnet-5-5
 
 Needs ANTHROPIC_API_KEY. Each case is a fresh conversation with its own fixed
 store clock. Results (every reply, tool call and tool result, plus the commit,
@@ -179,13 +180,14 @@ def main() -> None:
     parser.add_argument("--models", default=",".join(PRICES))
     parser.add_argument("--effort", default="medium")
     parser.add_argument("--repeat", type=int, default=1)
+    parser.add_argument("--cases", type=Path, default=ROOT / "evals" / "cases.json")
     parser.add_argument("--only", help="comma-separated case ids")
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
 
-    cases_path = ROOT / "evals" / "cases.json"
+    cases_path = args.cases.resolve()
     data = json.loads(cases_path.read_text(encoding="utf-8"))
     cases = [Case(**c) for c in data["cases"]]
     if args.only:
@@ -195,6 +197,8 @@ def main() -> None:
     source = provenance(cases_path)
     store, policies = Store(), Policies()
     stamp = datetime.now(TZ).strftime("%Y%m%d-%H%M%S")
+    if cases_path.stem != "cases":  # e.g. the regression set: keep its results apart by name
+        stamp += f"-{cases_path.stem}"
     out = ROOT / "evals" / "results"
     out.mkdir(parents=True, exist_ok=True)
 
