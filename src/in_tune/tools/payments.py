@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from decimal import Decimal
 
 from in_tune.formatting import brl, to_cents
 from in_tune.store import Store
-from in_tune.tools.catalog import PIX_DISCOUNT, final_price
+from in_tune.tools.catalog import PIX_DISCOUNT, availability, final_price
 
 # §3.1 wins over the §3 summary table (DATA_AUDIT #18): minimum installment by count.
 MIN_INSTALLMENT = [(3, Decimal("50")), (6, Decimal("80")), (12, Decimal("100"))]
@@ -28,6 +29,18 @@ def quote_payment(store: Store, product_ids: list[int]) -> dict:
     unknown = [pid for pid in product_ids if pid not in store.products]
     if unknown or not product_ids:
         return {"error": f"unknown product ids: {unknown}" if unknown else "no products given"}
+    # Only what can actually be bought gets a quote, and never more than in stock.
+    problems = []
+    for pid, quantity in Counter(product_ids).items():
+        product = store.products[pid]
+        if not product.sellable:
+            problems.append({"product_id": pid, "availability": availability(product)})
+        elif quantity > product.stock_quantity:
+            problems.append(
+                {"product_id": pid, "requested": quantity, "in_stock": product.stock_quantity}
+            )
+    if problems:
+        return {"error": "some items cannot be bought as requested", "items": problems}
 
     products = [store.products[pid] for pid in product_ids]
     total = sum((final_price(store, p) for p in products), Decimal(0))
@@ -56,7 +69,9 @@ def quote_payment(store: Store, product_ids: list[int]) -> dict:
         "shipping_campo_grande_metro": "free"
         if total >= FREE_METRO_SHIPPING_FROM
         else brl(METRO_SHIPPING_FEE),
-        "shipping_elsewhere": "cost depends on the CEP; cannot be quoted here",
+        "shipping_elsewhere": (
+            "cost depends on the CEP and cannot be quoted here; delivery times in policy §5.2"
+        ),
     }
     if any(store.active_promotion(p.product_id) for p in products):
         result["note"] = "PIX discount not applied to promotional items"

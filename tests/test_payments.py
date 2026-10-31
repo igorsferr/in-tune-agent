@@ -21,6 +21,11 @@ def store():
         ("1200.00", 12, True),  # R$ 100,00 >= R$ 100
         ("459.90", 12, False),  # R$ 38,33 < R$ 100 (order 18 broke this rule)
         ("10.00", 1, True),  # paying in full is always allowed
+        # Tier boundaries: 3 -> 4 and 6 -> 7 installments.
+        ("300.00", 3, True),  # 3 x R$ 100 (minimum R$ 50)
+        ("300.00", 4, False),  # 4 x R$ 75 (minimum R$ 80)
+        ("600.00", 6, True),  # 6 x R$ 100 (minimum R$ 80)
+        ("600.00", 7, False),  # 7 x R$ 85,71 (minimum R$ 100)
     ],
 )
 def test_installment_minimums_follow_section_3_1(total, count, allowed):
@@ -53,6 +58,22 @@ def test_cheap_item_has_few_installments_and_pays_metro_shipping(store):
 
 def test_repeated_id_counts_as_quantity(store):
     assert quote_payment(store, [119, 119])["total"] == "R$ 319,80"
+
+
+def test_items_that_cannot_be_bought_are_not_quoted(store):
+    quote = quote_payment(store, [96, 130, 136])  # out of stock, coming soon, discontinued
+    assert "error" in quote
+    assert [i["availability"] for i in quote["items"]] == [
+        "out_of_stock",
+        "coming_soon",
+        "discontinued",
+    ]
+
+
+def test_quantity_is_capped_at_stock(store):
+    quote = quote_payment(store, [90] * 4)  # Crafter HT-100: 3 in stock
+    assert quote["items"] == [{"product_id": 90, "requested": 4, "in_stock": 3}]
+    assert "error" not in quote_payment(store, [90] * 3)
 
 
 def test_unknown_product_is_an_error(store):
