@@ -238,3 +238,18 @@ Both became exclusions in the regression set (`e269a10`; re-grading the saved ru
   - the main assumptions stated, with a link to PLAN §4.
   
   The same check removed two overclaims: "every fact from a tool", which contradicts a listed limitation, and "before each merge", since the phase-2 transcript was read after its merge.
+
+### 20. PR #10 review, the last checks and the hand-over (19:35–)
+- **Review.** One blocker, docs only: the brief asks the README to justify the interface, the provider and how history is kept, and these were only in PLAN §8. The review also found:
+  - the AI section credited Igor with findings that §17 records as a check he asked the agent to run;
+  - three translations were not quite faithful;
+  - the manual has 28 numbered sections, not 29.
+  
+  All of it was fixed in `bfccc9e`, and Igor read the result.
+- **Igor's last changes**, none to the prompt or the tools:
+  - the PDF says "text messages", the brief's wording, instead of WhatsApp;
+  - the PDF explains why Haiku was disqualified;
+  - the example headers label the run time as Campo Grande time;
+  - the e-mail draft is cleaned up.
+- **Before the merge**, a clean clone of the public branch was tested in a temporary folder outside the project: install, tests and one question to the CLI. The API key was passed only as an environment variable, never written to a file.
+- **Hand-over.** Nothing changes in the repository after PR #10 is merged. Igor submits the PDF through the form first, then replies to the e-mail with the repository link.
