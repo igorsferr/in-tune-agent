@@ -125,10 +125,19 @@ Decisions are recorded here as they are made, each with its reason. The README s
 | Prompt strategy | A stable system prompt holding the persona, the rules of §2 and §4 as short directives, and when to use each tool. No facts in the prompt: every fact comes from a tool. Refined in phase 2 against the evals. | Keeps answers grounded and the prompt cacheable |
 | Conversation history | Kept in memory for the session only, no persistence | A CLI run is one customer conversation; persisting it would retain personal data with no benefit for the case |
 | Provider | Anthropic, paid key | Free tiers that train on content conflict with LGPD; a Haiku-class model costs cents per eval run |
-| Model | Decided in phase 3 from eval results | Choice by evidence, not preference |
+| Model | Decided in phase 3 by the rule below, written before the first eval run | Choice by evidence, not preference |
 | Interface | CLI | The brief's focus is the agent working |
 | Customer verification | Order id + phone or e-mail | Minimum check that keeps order data private (one e-mail is shared by two customers) |
 | Data in the repository | The provided CSVs and policy PDF are committed under `data/` | The project runs right after cloning. The data is fictional and was provided for this case, although the manual's footer says "Documento interno — Uso restrito". |
+
+### Model decision rule (fixed before any eval ran)
+
+Candidates: Claude Haiku 5.5, Sonnet 5.5 and Opus 5.5, all at effort `medium`. Each runs the full eval set (`evals/cases.json`) twice.
+
+1. **Disqualified:** any failure, in either run, in a case marked `critical` (privacy, invented promises, prompt injection, handoff of problem orders), or any ungrounded R$ amount in any case.
+2. **Quality bar:** at least 90% of all cases passed, averaged over the two runs.
+3. **Among the models that qualify, the cheapest per conversation wins.** If two are within 10% on cost, the one with lower median latency wins.
+4. **If no model qualifies,** fix what the failures show and run again. The rule does not change after seeing the results.
 
 ## 9. Assumptions
 
