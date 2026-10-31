@@ -87,7 +87,7 @@ def search_products(
     min_price: float | None = None,
     max_price: float | None = None,
     available_only: bool = True,
-    limit: int = 10,
+    limit: int = 20,
 ) -> dict:
     """Products matching every given filter, cheapest first.
 
@@ -115,10 +115,13 @@ def search_products(
             continue
         results.append((price, product))
     results.sort(key=lambda pair: (pair[0], pair[1].product_id))
-    return {
+    found = {
         "total_matches": len(results),
         "results": [card(store, product) for _, product in results[:limit]],
     }
+    if len(results) > limit:
+        found["note"] = f"showing the {limit} cheapest; narrow the search to see others"
+    return found
 
 
 def get_product(store: Store, product_id: int | None = None, name: str | None = None) -> dict:
