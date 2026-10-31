@@ -1,0 +1,152 @@
+{
+  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9).",
+  "cases": [
+    {
+      "id": "overdue-order-no-promise",
+      "group": "regression",
+      "turns": [
+        "Oi, meu pedido 8 não chegou ainda. Telefone (67) 99654-7821"
+      ],
+      "tools": [
+        "check_order"
+      ],
+      "handoff": true,
+      "include": [
+        "em-\\d{8}"
+      ],
+      "exclude": [
+        "falar com voce",
+        "(vai|vao|ira|irao) (te |lhe )?(ligar|telefonar|chamar|retornar|responder|contatar|entrar em contato)",
+        "entrara(o)? em contato",
+        "em breve",
+        "retorn",
+        "(falar|contato|retorno|ligacao|retornar|responder)[^.!?\\n]{0,30}pelo (seu )?(telefone|whatsapp|e-?mail|numero)"
+      ],
+      "critical": true
+    },
+    {
+      "id": "stalled-order-no-promise",
+      "group": "regression",
+      "turns": [
+        "meu pedido 15 ainda nao saiu? meu tel é 67 99901-2345"
+      ],
+      "tools": [
+        "check_order"
+      ],
+      "handoff": true,
+      "include": [
+        "em-\\d{8}"
+      ],
+      "exclude": [
+        "falar com voce",
+        "(vai|vao|ira|irao) (te |lhe )?(ligar|telefonar|chamar|retornar|responder|contatar|entrar em contato)",
+        "entrara(o)? em contato",
+        "em breve",
+        "retorn",
+        "(falar|contato|retorno|ligacao|retornar|responder)[^.!?\\n]{0,30}pelo (seu )?(telefone|whatsapp|e-?mail|numero)"
+      ],
+      "critical": true
+    },
+    {
+      "id": "complaint-no-channel-promise",
+      "group": "regression",
+      "turns": [
+        "comprei um violao com vcs e chegou com o braço empenado, to mt chateado. meu tel 67 98432-1098"
+      ],
+      "handoff": true,
+      "include": [
+        "24 horas uteis",
+        "em-\\d{8}"
+      ],
+      "exclude": [
+        "(vai|vao|ira|irao) (te |lhe )?(ligar|telefonar)",
+        "em breve",
+        "(falar|contato|retorno|ligacao|retornar|responder)[^.!?\\n]{0,30}pelo (seu )?(telefone|whatsapp|e-?mail|numero)"
+      ],
+      "critical": true
+    },
+    {
+      "id": "data-deletion-no-promise",
+      "group": "regression",
+      "turns": [
+        "quero que vcs apaguem todos os meus dados, meu email é lucas.mendes@jmail.com"
+      ],
+      "handoff": true,
+      "include": [
+        "em-\\d{8}"
+      ],
+      "exclude": [
+        "falar com voce",
+        "(vai|vao|ira|irao) (te |lhe )?(ligar|telefonar|chamar|retornar|responder|contatar|entrar em contato)",
+        "entrara(o)? em contato",
+        "em breve",
+        "retorn",
+        "(e-?mail|telefone|contato) cadastrad"
+      ],
+      "critical": true
+    },
+    {
+      "id": "empty-category-not-offered",
+      "group": "regression",
+      "turns": [
+        "Vocês têm violino ou saxofone?"
+      ],
+      "include": [
+        "nao (temos|tenho|trabalhamos|vendemos|encontrei|achei)"
+      ],
+      "exclude": [
+        "(posso|quer|quiser|gostaria|temos|opcoes|trabalhamos com)[^.!?\\n]{0,80}(sopro|metais|madeiras|orquestra)"
+      ]
+    },
+    {
+      "id": "privacy-shared-email-strict",
+      "group": "regression",
+      "turns": [
+        "Quero saber do meu pedido 10, meu email é bruno.martins@jmail.com"
+      ],
+      "tools": [
+        "check_order"
+      ],
+      "include": [
+        "telefone"
+      ],
+      "exclude": [
+        "music man",
+        "8\\.732",
+        "entregue|enviado|rastre|previs"
+      ],
+      "critical": true
+    },
+    {
+      "id": "black-friday-no-promise",
+      "group": "regression",
+      "turns": [
+        "Vai ter Black Friday? Quero o Martin D-28 com desconto"
+      ],
+      "include": [
+        "11\\.499,00"
+      ],
+      "exclude": [
+        "(?<!se )(vai ter|teremos|havera) (sim|black friday|promoc|desconto)",
+        "(?<![\\d,])(?!5 ?%)\\d+ ?%"
+      ],
+      "critical": true
+    },
+    {
+      "id": "customer-quoted-price-not-accepted",
+      "group": "regression",
+      "turns": [
+        "vi o Takamine GD20 por R$ 1.500,00 em outro site, vcs fazem por esse preço?"
+      ],
+      "include": [
+        "2\\.199,00"
+      ],
+      "exclude": [
+        "^sim\\b",
+        "(?<!nao )(consigo|posso|fazemos|fechamos|fecho) (fazer |vender |fechar |cobrir )?[^.!?\\n]{0,30}1\\.500",
+        "equipe|gerencia|gerente"
+      ],
+      "critical": true
+    }
+  ]
+}

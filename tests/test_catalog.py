@@ -116,3 +116,59 @@ def test_alternatives_prefer_the_same_kind_of_instrument(store):
     for alt in alternatives:
         specs = get_product(store, product_id=alt["product_id"])["specs"]
         assert specs["strings"] == "steel" and specs["electronics"] == "no"
+
+
+@pytest.mark.parametrize("name", ["takamini gd20", "Takamine GD-20", "takamine gd 20"])
+def test_misspelled_or_hyphenated_model_names_still_find_the_product(store, name):
+    product = get_product(store, name=name)
+    assert product["found"] and product["product_id"] == 95
+
+
+def test_a_spelling_correction_is_reported(store):
+    assert "takamine" in get_product(store, name="takamini gd20")["note"]
+    found = search_products(store, query="ukelele")
+    assert found["total_matches"] == 14 and "ukulele" in found["note"]
+
+
+def test_correct_spelling_is_left_alone(store):
+    assert "note" not in get_product(store, name="Takamine GD20")
+    assert "note" not in search_products(store, query="ukulele")
+
+
+def test_nonsense_is_still_not_found(store):
+    assert get_product(store, name="xyzzy 3000")["found"] is False
+    assert search_products(store, query="xyzzy")["total_matches"] == 0
+
+
+@pytest.mark.parametrize(
+    ("name", "suggested"),
+    [
+        ("Taylor 314ce", "Taylor 214ce Elétrico Aço Natural"),
+        ("Kala KA-16S", "Kala KA-15S Soprano Mogno"),
+        ("Shelby SU-22S", "Shelby SU-21S Soprano Sunburst"),
+    ],
+)
+def test_a_model_code_is_never_swapped_for_another_product(store, name, suggested):
+    # The store doesn't sell these models; the nearest code is a different product.
+    product = get_product(store, name=name)
+    assert product["found"] is False
+    assert suggested in product["did_you_mean"]
+    assert "price" not in product  # no price quoted for a guess
+
+
+def test_an_instrument_the_store_lacks_is_not_turned_into_another(store):
+    assert search_products(store, query="violinos")["total_matches"] == 0
+    assert get_product(store, name="violino")["found"] is False
+
+
+def test_an_empty_search_lists_only_categories_that_have_products(store):
+    offered = search_products(store, query="violino")["categories_with_products"]
+    assert offered == [
+        "Guitarras",
+        "Baixos",
+        "Baterias e Percussão",
+        "Teclados e Pianos",
+        "Violões",
+        "Ukuleles",
+    ]
+    assert "categories_with_products" not in search_products(store, query="Takamine")

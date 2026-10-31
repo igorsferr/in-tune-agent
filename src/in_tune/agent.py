@@ -16,7 +16,8 @@ from in_tune.policies import Policies
 from in_tune.prompts import build_system_prompt
 from in_tune.toolbox import Toolbox
 
-DEFAULT_MODEL = "claude-opus-5-5"
+# Chosen by the evals under the PLAN §8 rule (evals/results/20261031-1650-summary.md).
+DEFAULT_MODEL = "claude-sonnet-5-5"
 # Models that support server-side refusal fallback (`fallbacks: "default"`).
 FALLBACK_MODELS = {"claude-opus-5-5", "claude-sonnet-5-5"}
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
