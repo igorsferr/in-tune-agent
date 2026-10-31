@@ -134,7 +134,8 @@ class Toolbox:
             schema = model.model_json_schema()
             if name == "search_products":
                 categories = [c.name for c in self.store.categories.values()]
-                schema["properties"]["category"]["anyOf"][0]["enum"] = categories
+                options = schema["properties"]["category"]["anyOf"]
+                next(o for o in options if o.get("type") == "string")["enum"] = categories
             tools.append({"name": name, "description": DESCRIPTIONS[name], "input_schema": schema})
         return tools
 
