@@ -121,3 +121,27 @@ Lessons carried forward:
 3. Argument validation goes in one place, the phase-2 dispatcher.
 4. Every threshold not found in the manual is listed as an assumption.
 5. The review entry is written after the review.
+
+### 13. Phase 2: agent and CLI (16:49–16:57)
+The agent wrote the toolbox (tool schemas plus the validating dispatcher), the system prompt, the hand-written loop and the CLI, each with tests. The loop is tested against a scripted fake client, so the 121 tests still need no API key.
+
+It then ran 12 scripted conversations against Claude Opus 5.5: the brief's four sample questions plus the audit's hard cases.
+
+**What it got right:**
+- the 12 guitars up to R$ 1,000;
+- the Takamine GD20 price, without the inactive 12% promotion;
+- the return policy from §4;
+- refusing to confirm a 5-string bass, because the product's own data contradicts itself;
+- the shared e-mail opening nothing;
+- the overdue order handed off with a protocol number;
+- no Black Friday promise;
+- refusing a prompt-injected "50% off";
+- declining an off-topic question.
+
+**What the real run exposed, each fixed in its own commit:**
+- the search returned 10 of 12 results, so the agent invented a minimum price to page through them. It now returns up to 20 and says when a list was cut;
+- declining accessories, it offered wind instruments, a category with no products;
+- it used markdown bold;
+- it "corrected" a product name.
+
+Latency was 3–11 s per answer on Opus 5.5 at effort `medium`, with the system prompt and tools served from cache. Model and effort are chosen in phase 3 from the evals.
