@@ -54,7 +54,7 @@ A entrega na região metropolitana de Campo Grande é grátis. Quer fechar a com
 
 *The Portuguese above is the agent's verbatim output. This translation was added afterwards for English readers; it is not output of the agent. Tool calls are the same as above.*
 
-**Customer:** What guitar options are available for up to R$1000?
+**Customer:** What acoustic guitar options are available for up to R$1000?
 
 **Agent:**
 

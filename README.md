@@ -37,15 +37,18 @@ customer ─▶ CLI ─▶ tool-use loop (Claude) ─▶ 7 Python tools ─▶ C
   Each rule is plain Python with tests, so it is computed, not recalled.
 - **Search.**
   - The catalog is searched by keyword over the CSVs, with tolerance for typos and hyphens ("takamini gd20", "GD-20"). Model codes are never auto-corrected; the tool asks instead.
-  - The 8-page manual is split into its 29 numbered sections, and the agent fetches the one it needs.
+  - The 8-page manual is split into its 28 numbered sections, and the agent fetches the one it needs.
   - A vector database or a SQL agent would add moving parts this data does not need.
 - **Prompt strategy.** The system prompt holds rules, not facts:
   - a price, stock level, deadline or order status must come from a tool in that turn;
   - it sets the store's tone (manual §7.1);
-  - it says which source wins when the data contradicts itself ([`docs/DATA_AUDIT.md`](docs/DATA_AUDIT.md) lists 26 such pitfalls);
+  - it says which source wins when the data contradicts itself ([`docs/DATA_AUDIT.md`](docs/DATA_AUDIT.md) lists 26 pitfalls in the data and the manual);
   - it says when to hand off, and to promise nothing the manual does not state.
   
   The prompt is the same in every conversation, so it is cached.
+- **Interface: a CLI.** The case's focus is the agent working, and a terminal chat is the least code that shows it.
+- **Provider: Anthropic, with a paid key.** Free tiers that may train on the content conflict with LGPD for customer data, and a full test run costs cents.
+- **Conversation history: in memory, for the session only.** A CLI run is one customer conversation, and saving it would keep personal data for no benefit to the case.
 
 ## Model choice: how we know it works
 
@@ -85,6 +88,7 @@ Five real conversations with the agent, each in the original Portuguese with a f
 - **Seen when reading conversations:**
   - the agent sometimes adds true facts it did not look up in that conversation (instrument types, general music knowledge);
   - it may ask "quer fechar a compra?" although it cannot place orders; when the customer says yes, it says so and gives the store's contacts;
+  - asked for a 5-string bass, it opens with "temos sim" (yes, we have) before saying it cannot confirm the strings (example 5);
   - installments are rounded per payment, so 3 × R$ 199,97 adds up to one cent above the price;
   - which fallback model answered, if any, is not recorded.
 
@@ -94,7 +98,7 @@ Five real conversations with the agent, each in the original Portuguese with a f
 
 ## How this was built with AI
 
-I directed [Claude Code](https://claude.com/claude-code), which wrote the code, tests and documents. I set the scope, the rules and the acceptance criteria, and I decided what is recorded as a decision in the log.
+I directed [Claude Code](https://claude.com/claude-code), which wrote the code, tests and documents. I set the scope and the process rules, and I made the decisions recorded as mine in the log.
 
 I read the agent's replies myself:
 - the 12 conversations of the first full transcript;
@@ -102,7 +106,7 @@ I read the agent's replies myself:
 - every reply in the regression and confirmation runs;
 - the five examples.
 
-Several of those readings changed the agent: an invented "they will call you", an unverified "e-mail cadastrado", and an offer to take a price-match request to the team.
+Those readings changed the agent. I caught an invented "they will call you". I also had Claude Code check every statement against the case, and that check found an unverified "e-mail cadastrado" and an offer to take a price-match request to the team.
 
 A separate, read-only Claude session reviewed each pull request before merge. Each phase had one issue and one PR, and the history was never rewritten.
 

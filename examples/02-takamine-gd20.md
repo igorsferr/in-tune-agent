@@ -45,7 +45,7 @@ The Takamine GD20 Dreadnought Natural is R$ 2.199,00. It is available.
 
 With PIX it comes to R$ 2.089,05, which already includes the 5% discount.
 
-It is a guitar with a solid cedar top and steel strings. It has no electronics. Would you like me to work out the card installments?
+It is a guitar with a solid cedar top and steel strings. It also has no electronics. Would you like me to work out the card installments?
 
 **Customer:** can i pay in 12x?
 

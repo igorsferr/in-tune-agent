@@ -47,7 +47,7 @@ Lembrando que o número de cordas ainda precisa de confirmação. Quer que eu pe
 
 **Agent:**
 
-Yes, one bass came up in the search: the Yamaha Bass 3X Electric Bass, for R$ 11.445,00 (R$ 10.872,75 with PIX). It is available.
+Yes, we have a bass that came up in the search: the Yamaha Bass 3X Electric Bass, for R$ 11.445,00 (R$ 10.872,75 with PIX). It is available.
 
 This product's data is inconsistent. I can't guarantee the number of strings, because the record shows 5 in one place and 4 in another. I can't guarantee the brand either. If you like, I can ask the team to confirm these details before you decide.
 
