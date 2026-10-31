@@ -3,15 +3,18 @@
     uv run python evals/run_evals.py --models claude-haiku-5-5,claude-sonnet-5-5 --repeat 2
 
 Needs ANTHROPIC_API_KEY. Each case is a fresh conversation with its own fixed
-store clock. Results (every reply and tool call) go to evals/results/ as JSON,
-with a markdown summary next to them.
+store clock. Results (every reply, tool call and tool result, plus the commit,
+cases file and SDK they came from) go to evals/results/ as JSON, with a
+markdown summary next to them.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import statistics
+import subprocess
 import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -20,6 +23,7 @@ from decimal import Decimal
 from functools import partial
 from pathlib import Path
 
+import anthropic
 from dotenv import load_dotenv
 
 from in_tune.agent import Agent
@@ -54,6 +58,23 @@ def cost(model: str, usage: dict[str, int]) -> Decimal:
     return total / 1_000_000
 
 
+def provenance(cases_path: Path) -> dict:
+    """What a result file needs to be traced back to the code and cases that produced it."""
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True
+        ).stdout.strip()
+
+    return {
+        "commit": git("rev-parse", "HEAD"),
+        "dirty": bool(git("status", "--porcelain")),
+        "cases_file": cases_path.relative_to(ROOT).as_posix(),
+        "cases_sha256": hashlib.sha256(cases_path.read_bytes()).hexdigest(),
+        "anthropic_sdk": anthropic.__version__,
+    }
+
+
 def run_case(case: Case, model: str, effort: str, store: Store, policies: Policies) -> dict:
     now = datetime.fromisoformat(case.now or DEFAULT_NOW).replace(tzinfo=TZ)
     with tempfile.TemporaryDirectory() as tmp:
@@ -76,6 +97,7 @@ def run_case(case: Case, model: str, effort: str, store: Store, policies: Polici
         "id": case.id,
         "group": case.group,
         "critical": case.critical,
+        "now": now.isoformat(),
         "passed": not failures,
         "failures": failures,
         "seconds": seconds,
@@ -87,7 +109,12 @@ def run_case(case: Case, model: str, effort: str, store: Store, policies: Polici
                 "reply": reply.text,
                 "stop_reason": reply.stop_reason,
                 "tool_calls": [
-                    {"name": c.name, "input": c.input, "is_error": c.is_error}
+                    {
+                        "name": c.name,
+                        "input": c.input,
+                        "result": c.result,
+                        "is_error": c.is_error,
+                    }
                     for c in reply.tool_calls
                 ],
             }
@@ -114,19 +141,23 @@ def summarise(model: str, runs: list[list[dict]]) -> dict:
     }
 
 
+def _seconds(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.1f}"
+
+
 def report(summaries: list[dict], all_runs: dict[str, list[list[dict]]], stamp: str) -> str:
     lines = [
         f"# Eval results ({stamp})",
         "",
         "| Model | Pass rate | Critical fails | Grounding fails "
-        "| Median s | p90 s | US$/conversation |",
+        "| Median s/reply | p90 s/reply | US$/conversation |",
         "|---|---|---|---|---|---|---|",
     ]
     for s in summaries:
         lines.append(
             f"| {s['model']} | {s['pass_rate']:.0%} | {len(s['critical_failures'])} "
-            f"| {len(s['grounding_failures'])} | {s['median_latency_s']:.1f} "
-            f"| {s['p90_latency_s']:.1f} | {Decimal(s['cost_per_conversation_usd']):.4f} |"
+            f"| {len(s['grounding_failures'])} | {_seconds(s['median_latency_s'])} "
+            f"| {_seconds(s['p90_latency_s'])} | {Decimal(s['cost_per_conversation_usd']):.4f} |"
         )
     for model, runs in all_runs.items():
         failed = [r for run in runs for r in run if not r["passed"]]
@@ -151,13 +182,19 @@ def main() -> None:
     parser.add_argument("--only", help="comma-separated case ids")
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
+    if args.repeat < 1:
+        parser.error("--repeat must be at least 1")
 
-    data = json.loads((ROOT / "evals" / "cases.json").read_text(encoding="utf-8"))
+    cases_path = ROOT / "evals" / "cases.json"
+    data = json.loads(cases_path.read_text(encoding="utf-8"))
     cases = [Case(**c) for c in data["cases"]]
     if args.only:
         cases = [c for c in cases if c.id in args.only.split(",")]
+    if not cases:
+        parser.error("no case matches --only")
+    source = provenance(cases_path)
     store, policies = Store(), Policies()
-    stamp = datetime.now(TZ).strftime("%Y%m%d-%H%M")
+    stamp = datetime.now(TZ).strftime("%Y%m%d-%H%M%S")
     out = ROOT / "evals" / "results"
     out.mkdir(parents=True, exist_ok=True)
 
@@ -185,7 +222,7 @@ def main() -> None:
         all_runs[model] = runs
         summaries.append(summarise(model, runs))
         path = out / f"{stamp}-{model}-{args.effort}.json"
-        payload = {"model": model, "effort": args.effort, "runs": runs}
+        payload = {"model": model, "effort": args.effort, **source, "runs": runs}
         text = json.dumps(payload, ensure_ascii=False, indent=1)
         path.write_text(text, encoding="utf-8", newline="\n")
 
