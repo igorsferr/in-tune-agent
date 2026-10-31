@@ -58,6 +58,19 @@ customer ─▶ CLI ─▶ agent loop (Claude, tool use) ─▶ Python tools ─
 
 **Time.** The agent reads the real Campo Grande clock through `store_status`. Tests and evals inject a fixed time, so results are reproducible.
 
+**Assumptions** (not stated in the manual; each one is our choice, made explicit):
+
+| Assumption | Choice | Reason |
+|---|---|---|
+| When an order counts as stalled | Pending or confirmed for more than 7 days | The manual's own clocks are shorter (boleto clears in 3 business days, metro delivery takes 1–3), so a week without dispatch is clearly abnormal |
+| Exactly R$ 500 for metro shipping | Free | "acima de" / "abaixo de" leaves R$ 500 undefined; we take the customer's side |
+| Free-shipping base | Order total with promotions, before any PIX discount | It is the list total the customer sees; a PIX discount should not cost them free shipping |
+| Installment rounding | Each installment is rounded to the cent | The sum can differ from the total by a cent, which is normal practice |
+| Alternatives for unavailable items | Same category, then same string type and electronics, then closest price | §7.3 asks for "alternativas semelhantes" without defining similarity |
+| Conflict detection | A heuristic built from these rows (known brands, model names, woods) | It is not a general product-data validator |
+| Order verification by e-mail | Only when exactly one customer holds the e-mail; otherwise the phone is required | One e-mail belongs to two customers |
+| Tool arguments from the model | Validated and coerced in the agent's dispatcher (phase 2); a failure becomes an error result, never a crash | Keeps every tool simple and handles bad input in one place |
+
 ## 5. Quality
 
 - **Unit tests** (pytest, no API key) for every tool and rule above. CI runs them with ruff on every push.

@@ -89,12 +89,35 @@ All were fixed in follow-up commits on the same PR. Lessons carried forward:
 After the review, Igor set a standing rule: the case's own instructions (the brief and the recruiter's e-mail) always override his preferences. The submission channel was the first decision it changed. The two sources name different channels, so both are used: an e-mail reply with the repository link, and the PDF through the form.
 
 ### 11. Phase 1: data and tools (16:24–16:32)
-Twelve commits in eight minutes. The coding agent writes code fast, and the time in this phase went into planning it beforehand and into its review afterwards. Each commit is one piece with its tests: the 70 tests run in under a second and need no API key.
+The agent wrote phase 1 in this session between 16:24 and 16:32, one piece at a time, with nothing drafted beforehand. For each piece it wrote the module and its tests, ran ruff and pytest, and committed when both passed. That gave 12 commits, with the test count growing from 7 to 70.
 
-Decisions taken while implementing, all applying rules from `PLAN.md` §4:
-- **Conflict detection** compares brand (including model names such as "Precision" → Fender), string count, key count and body or shell wood. It finds exactly the 7 products in the audit and nothing else.
-- **Price filters** use the price the customer pays, with the active promotion applied. The PIX price is offered only when there is no promotion.
-- **Unavailable products** (out of stock, coming soon or discontinued) come with up to 3 available alternatives from the same category, closest in price (§7.3).
-- **Order lookup** answers a wrong order number and a wrong contact in the same way. Orders are flagged for a human when shipped past their ETA, or when pending or confirmed for more than 7 days.
-- **Store hours** use Campo Grande time (UTC−4) and the 2026 national holidays. This was tested on today's real case: closed Saturday afternoon, Sunday closed, Monday is Finados, so the store next opens Tuesday at 09:00.
-- **Handoffs** go to a local log with a protocol number, since the case has no ticketing system.
+`data/policies.md` was read in full by the agent before it was committed. Igor had set the scope and the rules in `PLAN.md` beforehand. At that point no human had reviewed the code; the independent review came next (§12).
+
+Decisions taken while implementing, all applying `PLAN.md` §4:
+- **Conflict detection** compares brand (including model names such as "Precision" → Fender), string count, key count and body or shell wood.
+- **Price filters** use the price the customer pays, with the promotion applied. The PIX price is offered only when there is no promotion.
+- **Unavailable products** come with available alternatives from the same category.
+- **Orders** are flagged for a human when shipped past their ETA, or when pending or confirmed for more than 7 days.
+- **Store hours** use Campo Grande time and the 2026 national holidays: on Saturday afternoon, the next opening is Tuesday 09:00, because Monday is Finados.
+- **Handoffs** go to a local log with a protocol number.
+
+### 12. Second independent review (PR #7)
+Verdict: merge after fixes. There was 1 blocker and 8 should-fix items. The rules themselves (installment tiers, PIX, sellable logic, holidays, timezone) were verified against the manual and the data, and the policy extraction matched the PDF word for word.
+
+- **Blocker: a privacy leak.** `bruno.martins@jmail.com` belongs to two different customers, and it opened customer 11's order for anyone using it. The test's name claimed the opposite of what it asserted. Fixed: an e-mail verifies only when exactly one customer holds it. The new negative test fails on the old code.
+- **Should-fix items, also fixed:**
+  - an unknown category returned zero results, which the agent would have read as "we don't sell that". It now returns the valid category names;
+  - "Martin D-28" came back ambiguous with the D-28E;
+  - payment quotes were given for items that cannot be bought, or above stock;
+  - the installment tier boundaries were untested;
+  - a mutable shared result could be corrupted by its first caller;
+  - a time without a timezone was read as the machine's time;
+  - the 7-day "stalled" threshold had no stated reason. It is now in a table of explicit assumptions in `PLAN.md` §4.
+- **This log's §11** promoted the speed of the work instead of recording who did what and when. It was rewritten as a factual record.
+
+Lessons carried forward:
+1. A test's name is a claim: assert the negative case it names.
+2. A tool never answers "nothing" when it means "I didn't understand".
+3. Argument validation goes in one place, the phase-2 dispatcher.
+4. Every threshold not found in the manual is listed as an assumption.
+5. The review entry is written after the review.
