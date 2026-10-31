@@ -220,3 +220,21 @@ Both became exclusions in the regression set (`e269a10`; re-grading the saved ru
   - the price-quote regression case forbids any mention of "equipe", which is broader than needed.
   
   The last two touch a frozen tool and the eval set, so they are listed as known limitations rather than changed.
+
+## Phase 4: docs, examples and submission
+
+### 19. Examples and README (19:12–19:33)
+- **Examples from the frozen code.** The conversation script gained an examples mode (`79e11fe`). Each file records the commit and the hashes of the `src/` and `data/` trees. These are identical to those of `8149b71`, the confirmation run, so anyone can check that the examples came from the confirmed code.
+- **The agent's reading of the five conversations.** Every amount matches a tool result. Two things went into the README's limitations, and the examples were not regenerated to pick a nicer run:
+  - "Quer fechar a compra?" offers something the agent cannot do. A probe that was not committed showed that, when the customer says yes, the agent says so and gives the store's contacts.
+  - Installments are rounded per payment, so 3 × R$ 199,97 adds up to one cent above the price.
+- **Igor set three rules from the e-mail for this phase:**
+  - Open with the simplest solution, and treat the evals as the evidence, not the product.
+  - Give every example a full English translation. The agent's Portuguese stays verbatim, and the translation is marked as not agent output.
+  - Keep the submission PDF short.
+- **README review.** Igor read the README and the examples, then asked for three changes before the commit:
+  - the AI section in the first person;
+  - an exact list of what he read, instead of "every output";
+  - the main assumptions stated, with a link to PLAN §4.
+  
+  The same check removed two overclaims: "every fact from a tool", which contradicts a listed limitation, and "before each merge", since the phase-2 transcript was read after its merge.
