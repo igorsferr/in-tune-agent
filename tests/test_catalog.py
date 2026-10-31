@@ -62,6 +62,13 @@ def test_conflicting_attributes_are_reported_not_resolved(store):
     assert {"attribute": "strings", "description": "5", "specs": "4"} in bass["data_warnings"]
 
 
+def test_a_long_list_says_it_was_cut(store):
+    found = search_products(store, category="Violões")
+    assert found["total_matches"] == 33 and len(found["results"]) == 20
+    assert "narrow the search" in found["note"]
+    assert "note" not in search_products(store, category="Violões", max_price=1000)
+
+
 def test_empty_category_returns_nothing(store):
     assert search_products(store, category="Cordas Orquestrais")["total_matches"] == 0
 

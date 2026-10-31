@@ -121,3 +121,33 @@ Lessons carried forward:
 3. Argument validation goes in one place, the phase-2 dispatcher.
 4. Every threshold not found in the manual is listed as an assumption.
 5. The review entry is written after the review.
+
+### 13. Phase 2: agent and CLI (16:49–16:57)
+Claude Code (the coding agent) wrote the toolbox, the system prompt, the hand-written loop and the CLI, each with tests. The loop is tested against a scripted fake client, so the tests need no API key.
+
+It then ran 12 scripted conversations against Claude Opus 5.5 as the store agent: the brief's four sample questions plus the audit's hard cases. That first run was not saved. It exposed four problems, each fixed in its own commit:
+- the search returned 10 of 12 results, so the store agent invented a minimum price to page through them;
+- declining accessories, it offered wind instruments, a category with no products;
+- it used markdown bold;
+- it "corrected" a product name.
+
+### 14. Third independent review (PR #8)
+Verdict: merge after fixes, with 1 blocker and 8 should-fix items. The API usage was checked against Anthropic's documentation and found correct: history handling, fallback scope, effort, no forced tool choice, and the cache breakpoint.
+
+- **Blocker.** An API error right after a tool step left the session permanently broken: every later message failed. A handoff already registered would never reach the customer. The CLI's attempt to repair the history made it worse. Recovery now lives inside the agent, append-only. A truncated reply holding a tool call, and an empty response, also left the history invalid; both are fixed.
+- **Tests.** One `assert_valid_history` check now runs after every loop test. The new tests fail on the previous loop, 7 of 18.
+- **Prompt fixes:**
+  - it both offered and required a handoff for conflicting product data, which would have registered handoffs for customers who were only browsing basses;
+  - "unless a tool showed it" let the manual's catalog description bring back the empty-category bug;
+  - out-of-hours handling had no trigger, so `store_status` is now called at the start of each conversation.
+- **Cost accounting.** The conversation history is now cached as well, and cache writes are counted, which phase 3 needs to compare models on cost.
+- **Evidence.** The conversation script is now in the repository (`scripts/run_conversations.py`). The 12 conversations were run again after every fix, and that transcript is committed under `evals/runs/` with every tool call, latency and token count. Claude Code read it in full; Igor's review of it is pending.
+
+  In that run, latency was 3.6–9.3 s per answer, and almost all input tokens came from the cache. It also left one thing for the evals to catch: after handing off the overdue order, the store agent said the team "will contact you by phone", which no tool states.
+
+Lessons carried forward:
+1. Every exit from a stateful loop keeps the same invariant, written once as a test helper.
+2. State is repaired by the object that owns it.
+3. A prompt rule that depends on a tool names the tool.
+4. Evidence that isn't committed doesn't exist for the reader.
+5. Measure what is billed (cache writes included) before comparing costs.

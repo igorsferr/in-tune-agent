@@ -5,9 +5,14 @@ description = "Customer service AI agent for Empório da Música (Artefact AI En
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "anthropic>=2.3.0",
     "pydantic>=2.14.2",
+    "python-dotenv>=1.2.4",
     "tzdata>=2026.6",
 ]
+
+[project.scripts]
+in-tune = "in_tune.cli:main"
 
 [dependency-groups]
 dev = [
