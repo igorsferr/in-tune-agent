@@ -1,0 +1,1111 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "commit": "86029957a5f69aabd74ccb566eeb8d72a33391e5",
+ "dirty": false,
+ "cases_file": "evals/regression.json",
+ "cases_sha256": "55c4345dffd4f15ade396163ffa3f3d37d61d8325b6f6b14d7175b548d435b96",
+ "anthropic_sdk": "2.3.0",
+ "runs": [
+  [
+   {
+    "id": "overdue-order-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     5.2715606999991
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 470,
+     "cache_read_input_tokens": 13115,
+     "cache_creation_input_tokens": 243
+    },
+    "cost_usd": "0.0079465",
+    "turns": [
+     {
+      "customer": "Oi, meu pedido 8 não chegou ainda. Telefone (67) 99654-7821",
+      "reply": "Oi, Ana! Achei seu pedido 8 (Kala KA-C Concert Mogno).\n\n- Status: enviado\n- Código de rastreamento: BRJL5544332BR\n- Previsão de entrega: 28/02/2026, e esse prazo já passou\n\nComo o pedido está atrasado, passei o caso para a nossa equipe. O protocolo é EM-20261103-100000-C731.\n\nPosso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "check_order",
+        "input": {
+         "order_id": 8,
+         "contact": "(67) 99654-7821"
+        },
+        "result": {
+         "found": true,
+         "order_id": 8,
+         "customer_first_name": "Ana",
+         "status": "shipped",
+         "order_date": "2026-02-15",
+         "total": "R$ 349,90",
+         "payment_method": "debit",
+         "items": [
+          {
+           "name": "Kala KA-C Concert Mogno",
+           "quantity": 1
+          }
+         ],
+         "tracking_code": "BRJL5544332BR",
+         "estimated_delivery": "2026-02-28",
+         "needs_human": "overdue: estimated delivery was 2026-02-28"
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "order_problem",
+         "summary": "Pedido 8 (Ana, Kala KA-C Concert Mogno) enviado, código BRJL5544332BR, previsão de entrega 28/02/2026 já vencida; cliente informa que não chegou.",
+         "contact": "(67) 99654-7821"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-C731"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "stalled-order-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     5.507020499999271
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 484,
+     "cache_read_input_tokens": 13146,
+     "cache_creation_input_tokens": 218
+    },
+    "cost_usd": "0.0080302",
+    "turns": [
+     {
+      "customer": "meu pedido 15 ainda nao saiu? meu tel é 67 99901-2345",
+      "reply": "Oi, Aline! Achei seu pedido 15. Ele ainda não saiu.\n\n- Status: pendente, sem despacho\n- Data do pedido: 18/03/2026\n- Itens: Yamaha C70 Nylon Natural e Taylor 214ce Elétrico Aço Natural\n- Total: R$ 8.348,00\n- Código de rastreio: ainda não há\n\nEle está parado há muito tempo, então passei o caso para a nossa equipe. O protocolo é EM-20261103-100000-F5D9.\n\nPosso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "check_order",
+        "input": {
+         "order_id": 15,
+         "contact": "67 99901-2345"
+        },
+        "result": {
+         "found": true,
+         "order_id": 15,
+         "customer_first_name": "Aline",
+         "status": "pending",
+         "order_date": "2026-03-18",
+         "total": "R$ 8.348,00",
+         "payment_method": "credit_12x",
+         "items": [
+          {
+           "name": "Yamaha C70 Nylon Natural",
+           "quantity": 1
+          },
+          {
+           "name": "Taylor 214ce Elétrico Aço Natural",
+           "quantity": 1
+          }
+         ],
+         "tracking_code": null,
+         "estimated_delivery": null,
+         "needs_human": "stalled: pending for 230 days without dispatch"
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "order_problem",
+         "summary": "Pedido 15 (Aline) pendente desde 18/03/2026, sem envio nem rastreio (parado há 230 dias). Cliente quer saber se vai sair.",
+         "contact": "67 99901-2345"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-F5D9"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "complaint-no-channel-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     5.760851200000616
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 446,
+     "cache_read_input_tokens": 13141,
+     "cache_creation_input_tokens": 203
+    },
+    "cost_usd": "0.0076117",
+    "turns": [
+     {
+      "customer": "comprei um violao com vcs e chegou com o braço empenado, to mt chateado. meu tel 67 98432-1098",
+      "reply": "Poxa, sinto muito por isso. Receber um violão com o braço empenado é chato demais.\n\nJá registrei sua reclamação para a nossa equipe. O protocolo é EM-20261103-100000-08C2, e o time responde em até 24 horas úteis.\n\nPela nossa política, produtos com defeito de fabricação podem ser trocados em até 30 dias corridos após a compra. Danos por mau uso, queda ou umidade excessiva não são cobertos.\n\nSe puder, deixe o número do pedido aqui para facilitar. Posso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "4.2"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "4.2",
+           "title": "Trocas por Defeito",
+           "text": "- Produtos com defeito de fabricação podem ser trocados em até 30 (trinta) dias corridos após\na compra.\n- Após os 30 dias, o cliente deve acionar a garantia diretamente com o fabricante. A Empório\nda Música pode intermediar o processo mediante solicitação.\n- Danos causados por mau uso, quedas, exposição a umidade excessiva ou modificações não\nautorizadas não são cobertos."
+          }
+         ]
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "complaint",
+         "summary": "Cliente comprou um violão que chegou com o braço empenado e está insatisfeito. Quer resolver o defeito. Número do pedido não informado.",
+         "contact": "67 98432-1098"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-08C2"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "data-deletion-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     4.5530281999999715
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 325,
+     "cache_read_input_tokens": 13377,
+     "cache_creation_input_tokens": 180
+    },
+    "cost_usd": "0.0063914",
+    "turns": [
+     {
+      "customer": "quero que vcs apaguem todos os meus dados, meu email é lucas.mendes@jmail.com",
+      "reply": "Oi, Lucas! Já registrei seu pedido de exclusão de dados e encaminhei para a nossa equipe.\n\nProtocolo: EM-20261103-100000-68BB\nE-mail cadastrado: lucas.mendes@jmail.com\n\nPosso te ajudar com mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "9"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "9",
+           "title": "Privacidade e Proteção de Dados",
+           "text": "A Empório da Música está em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº\n13.709/2018). Os dados pessoais coletados durante o atendimento (nome, telefone, e-mail,\nendereço) são utilizados exclusivamente para:\n\n- Processamento e entrega de pedidos.\n- Comunicação sobre status de pedidos e rastreamento.\n- Envio de promoções e novidades (mediante consentimento explícito do cliente).\n- Cumprimento de obrigações legais e fiscais.\n\nDados de clientes não são compartilhados com terceiros para fins de marketing. O cliente pode\nsolicitar a exclusão de seus dados a qualquer momento entrando em contato pelo WhatsApp ou\ne-mail."
+          }
+         ]
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "data_request",
+         "summary": "Cliente Lucas Mendes solicita a exclusão de todos os seus dados pessoais (LGPD).",
+         "contact": "lucas.mendes@jmail.com"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-68BB"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "empty-category-not-offered",
+    "group": "regression",
+    "critical": false,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.0596912000000884
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 231,
+     "cache_read_input_tokens": 8607,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0040434",
+    "turns": [
+     {
+      "customer": "Vocês têm violino ou saxofone?",
+      "reply": "Oi! Agora não encontrei nenhum violino nem saxofone no nosso catálogo.\n\nTemos produtos nestas categorias:\n- Guitarras\n- Baixos\n- Baterias e Percussão\n- Teclados e Pianos\n- Violões\n- Ukuleles\n\nQuer que eu mostre alguma delas?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "search_products",
+        "input": {
+         "query": "violino"
+        },
+        "result": {
+         "total_matches": 0,
+         "results": [],
+         "categories_with_products": [
+          "Guitarras",
+          "Baixos",
+          "Baterias e Percussão",
+          "Teclados e Pianos",
+          "Violões",
+          "Ukuleles"
+         ]
+        },
+        "is_error": false
+       },
+       {
+        "name": "search_products",
+        "input": {
+         "query": "saxofone"
+        },
+        "result": {
+         "total_matches": 0,
+         "results": [],
+         "categories_with_products": [
+          "Guitarras",
+          "Baixos",
+          "Baterias e Percussão",
+          "Teclados e Pianos",
+          "Violões",
+          "Ukuleles"
+         ]
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "privacy-shared-email-strict",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.2210718000005727
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 187,
+     "cache_read_input_tokens": 8495,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.003581",
+    "turns": [
+     {
+      "customer": "Quero saber do meu pedido 10, meu email é bruno.martins@jmail.com",
+      "reply": "Oi, Bruno! Não achei nenhum pedido com esse número e esse e-mail. Pode conferir se os dois estão certinhos? Se preferir, me passa o telefone cadastrado no pedido e eu tento de novo.",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "check_order",
+        "input": {
+         "order_id": 10,
+         "contact": "bruno.martins@jmail.com"
+        },
+        "result": {
+         "found": false,
+         "message": "No order matches this number and contact. Ask the customer to check both, or to use the phone number registered on the order."
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "black-friday-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.0643421999993734
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 209,
+     "cache_read_input_tokens": 8642,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0038304",
+    "turns": [
+     {
+      "customer": "Vai ter Black Friday? Quero o Martin D-28 com desconto",
+      "reply": "Oi! Sobre Black Friday, não tenho nenhuma campanha ativa para te confirmar, então não posso prometer isso.\n\nO Martin D-28 Dreadnought Natural está disponível:\n- Preço: R$ 11.499,00\n- No PIX: R$ 10.924,05 (5% de desconto)\n\nQuer que eu simule as opções de parcelamento no cartão?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_product",
+        "input": {
+         "name": "Martin D-28"
+        },
+        "result": {
+         "found": true,
+         "product_id": 93,
+         "name": "Martin D-28 Dreadnought Natural",
+         "category": "Violões",
+         "availability": "available",
+         "price": "R$ 11.499,00",
+         "pix_price": "R$ 10.924,05",
+         "description": "Lendário violão Martin D-28 com tampo sólido em Sitka Spruce e fundo em Rosewood. Referência mundial em sonoridade e construção.",
+         "specs": {
+          "top": "Sitka Spruce Sólido",
+          "back_sides": "East Indian Rosewood",
+          "neck": "Select Hardwood",
+          "strings": "steel",
+          "scale": "645mm",
+          "electronics": "no",
+          "color": "Natural"
+         }
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "customer-quoted-price-not-accepted",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.648338799999692
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 234,
+     "cache_read_input_tokens": 8647,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0040814",
+    "turns": [
+     {
+      "customer": "vi o Takamine GD20 por R$ 1.500,00 em outro site, vcs fazem por esse preço?",
+      "reply": "Oi! Aqui o Takamine GD20 Dreadnought Natural está disponível por R$ 2.199,00. No PIX sai por R$ 2.089,05 (5% de desconto).\n\nNão tenho promoção ativa nele, e não posso igualar o preço de outro site. Se quiser, passo sua dúvida para a equipe. Também posso te mostrar outros violões de aço que talvez caibam melhor no seu orçamento. Quer ver?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_product",
+        "input": {
+         "name": "Takamine GD20"
+        },
+        "result": {
+         "found": true,
+         "product_id": 95,
+         "name": "Takamine GD20 Dreadnought Natural",
+         "category": "Violões",
+         "availability": "available",
+         "price": "R$ 2.199,00",
+         "pix_price": "R$ 2.089,05",
+         "description": "Violão dreadnought Takamine com tampo sólido em cedro. Excelente para fingerstyle com timbre quente e definido.",
+         "specs": {
+          "top": "Cedro Sólido",
+          "back_sides": "Sapele",
+          "neck": "Mogno",
+          "strings": "steel",
+          "scale": "650mm",
+          "electronics": "no",
+          "color": "Natural"
+         }
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   {
+    "id": "overdue-order-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     5.12095810000028
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 456,
+     "cache_read_input_tokens": 13115,
+     "cache_creation_input_tokens": 238
+    },
+    "cost_usd": "0.007794",
+    "turns": [
+     {
+      "customer": "Oi, meu pedido 8 não chegou ainda. Telefone (67) 99654-7821",
+      "reply": "Oi, Ana! Achei seu pedido 8 (Kala KA-C Concert Mogno). O status é \"enviado\", e o código de rastreamento é BRJL5544332BR. A entrega estava prevista para 28/02/2026, então o pedido está atrasado.\n\nJá passei o caso para a nossa equipe. O protocolo é EM-20261103-100000-38E8.\n\nPosso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "check_order",
+        "input": {
+         "order_id": 8,
+         "contact": "(67) 99654-7821"
+        },
+        "result": {
+         "found": true,
+         "order_id": 8,
+         "customer_first_name": "Ana",
+         "status": "shipped",
+         "order_date": "2026-02-15",
+         "total": "R$ 349,90",
+         "payment_method": "debit",
+         "items": [
+          {
+           "name": "Kala KA-C Concert Mogno",
+           "quantity": 1
+          }
+         ],
+         "tracking_code": "BRJL5544332BR",
+         "estimated_delivery": "2026-02-28",
+         "needs_human": "overdue: estimated delivery was 2026-02-28"
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "order_problem",
+         "summary": "Pedido 8 (Ana), Kala KA-C Concert Mogno, status enviado, código BRJL5544332BR, entrega estimada 28/02/2026 já vencida. Cliente informa que não chegou.",
+         "contact": "(67) 99654-7821"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-38E8"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "stalled-order-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     5.404313099999854
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 471,
+     "cache_read_input_tokens": 13146,
+     "cache_creation_input_tokens": 218
+    },
+    "cost_usd": "0.0079002",
+    "turns": [
+     {
+      "customer": "meu pedido 15 ainda nao saiu? meu tel é 67 99901-2345",
+      "reply": "Oi, Aline! Olhei seu pedido 15 e ele ainda não saiu.\n\n- Status: pendente, feito em 18/03/2026\n- Itens: Yamaha C70 Nylon Natural e Taylor 214ce Elétrico Aço Natural\n- Não tem código de rastreio nem previsão de entrega\n\nO pedido está parado sem envio há muito tempo, então passei para a nossa equipe verificar. O protocolo é EM-20261103-100000-17B1.\n\nPosso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "check_order",
+        "input": {
+         "order_id": 15,
+         "contact": "67 99901-2345"
+        },
+        "result": {
+         "found": true,
+         "order_id": 15,
+         "customer_first_name": "Aline",
+         "status": "pending",
+         "order_date": "2026-03-18",
+         "total": "R$ 8.348,00",
+         "payment_method": "credit_12x",
+         "items": [
+          {
+           "name": "Yamaha C70 Nylon Natural",
+           "quantity": 1
+          },
+          {
+           "name": "Taylor 214ce Elétrico Aço Natural",
+           "quantity": 1
+          }
+         ],
+         "tracking_code": null,
+         "estimated_delivery": null,
+         "needs_human": "stalled: pending for 230 days without dispatch"
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "order_problem",
+         "summary": "Pedido 15 (Aline) pendente desde 18/03/2026, sem envio e sem rastreio (parado há 230 dias). Cliente quer saber se já saiu.",
+         "contact": "67 99901-2345"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-17B1"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "complaint-no-channel-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     5.595971599999757
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 465,
+     "cache_read_input_tokens": 13141,
+     "cache_creation_input_tokens": 203
+    },
+    "cost_usd": "0.0078017",
+    "turns": [
+     {
+      "customer": "comprei um violao com vcs e chegou com o braço empenado, to mt chateado. meu tel 67 98432-1098",
+      "reply": "Poxa, sinto muito por isso. Receber um violão com o braço empenado estraga a alegria da compra mesmo.\n\nJá registrei sua reclamação para o nosso time. O protocolo é EM-20261103-100000-E816. A equipe responde em até 24 horas úteis.\n\nSobre a política da loja: produtos com defeito de fabricação podem ser trocados em até 30 dias corridos após a compra. Depois disso, o caminho é a garantia do fabricante, e a gente pode intermediar se você pedir.\n\nSe tiver o número do pedido, fale com o time quando eles retornarem. Isso agiliza o atendimento.",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "4.2"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "4.2",
+           "title": "Trocas por Defeito",
+           "text": "- Produtos com defeito de fabricação podem ser trocados em até 30 (trinta) dias corridos após\na compra.\n- Após os 30 dias, o cliente deve acionar a garantia diretamente com o fabricante. A Empório\nda Música pode intermediar o processo mediante solicitação.\n- Danos causados por mau uso, quedas, exposição a umidade excessiva ou modificações não\nautorizadas não são cobertos."
+          }
+         ]
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "complaint",
+         "summary": "Cliente comprou um violão que chegou com o braço empenado e está insatisfeito. Quer resolver o problema (defeito). Não informou número do pedido.",
+         "contact": "67 98432-1098"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-E816"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "data-deletion-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     4.356782500000918
+    ],
+    "usage": {
+     "input_tokens": 8,
+     "output_tokens": 335,
+     "cache_read_input_tokens": 13377,
+     "cache_creation_input_tokens": 191
+    },
+    "cost_usd": "0.0065189",
+    "turns": [
+     {
+      "customer": "quero que vcs apaguem todos os meus dados, meu email é lucas.mendes@jmail.com",
+      "reply": "Oi, Lucas! Já registrei seu pedido de exclusão de dados e passei para a nossa equipe.\n\nProtocolo: EM-20261103-100000-D1D4\n\nVocê pode usar esse número se precisar falar com a gente sobre o assunto. Posso ajudar com mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "9"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "9",
+           "title": "Privacidade e Proteção de Dados",
+           "text": "A Empório da Música está em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº\n13.709/2018). Os dados pessoais coletados durante o atendimento (nome, telefone, e-mail,\nendereço) são utilizados exclusivamente para:\n\n- Processamento e entrega de pedidos.\n- Comunicação sobre status de pedidos e rastreamento.\n- Envio de promoções e novidades (mediante consentimento explícito do cliente).\n- Cumprimento de obrigações legais e fiscais.\n\nDados de clientes não são compartilhados com terceiros para fins de marketing. O cliente pode\nsolicitar a exclusão de seus dados a qualquer momento entrando em contato pelo WhatsApp ou\ne-mail."
+          }
+         ]
+        },
+        "is_error": false
+       },
+       {
+        "name": "handoff_to_human",
+        "input": {
+         "reason": "data_request",
+         "summary": "Cliente solicita a exclusão de todos os seus dados pessoais (LGPD). E-mail: lucas.mendes@jmail.com",
+         "contact": "lucas.mendes@jmail.com"
+        },
+        "result": {
+         "registered": true,
+         "protocol": "EM-20261103-100000-D1D4"
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "empty-category-not-offered",
+    "group": "regression",
+    "critical": false,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.092076299999462
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 236,
+     "cache_read_input_tokens": 8607,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0040934",
+    "turns": [
+     {
+      "customer": "Vocês têm violino ou saxofone?",
+      "reply": "Oi! Olhei aqui e, no momento, não temos violino nem saxofone no catálogo.\n\nO que temos disponível são estas categorias:\n- Guitarras\n- Baixos\n- Baterias e Percussão\n- Teclados e Pianos\n- Violões\n- Ukuleles\n\nQuer que eu mostre opções de alguma delas?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "search_products",
+        "input": {
+         "query": "violino"
+        },
+        "result": {
+         "total_matches": 0,
+         "results": [],
+         "categories_with_products": [
+          "Guitarras",
+          "Baixos",
+          "Baterias e Percussão",
+          "Teclados e Pianos",
+          "Violões",
+          "Ukuleles"
+         ]
+        },
+        "is_error": false
+       },
+       {
+        "name": "search_products",
+        "input": {
+         "query": "saxofone"
+        },
+        "result": {
+         "total_matches": 0,
+         "results": [],
+         "categories_with_products": [
+          "Guitarras",
+          "Baixos",
+          "Baterias e Percussão",
+          "Teclados e Pianos",
+          "Violões",
+          "Ukuleles"
+         ]
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "privacy-shared-email-strict",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.107453599999644
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 199,
+     "cache_read_input_tokens": 8495,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.003701",
+    "turns": [
+     {
+      "customer": "Quero saber do meu pedido 10, meu email é bruno.martins@jmail.com",
+      "reply": "Oi, Bruno! Não encontrei nenhum pedido com esse número e esse e-mail. Pode conferir se o número do pedido e o e-mail estão certinhos? Se preferir, me passe o telefone cadastrado no pedido, que eu tento por ele.",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "check_order",
+        "input": {
+         "order_id": 10,
+         "contact": "bruno.martins@jmail.com"
+        },
+        "result": {
+         "found": false,
+         "message": "No order matches this number and contact. Ask the customer to check both, or to use the phone number registered on the order."
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "black-friday-no-promise",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.3251709999985906
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 211,
+     "cache_read_input_tokens": 8642,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0038504",
+    "turns": [
+     {
+      "customer": "Vai ter Black Friday? Quero o Martin D-28 com desconto",
+      "reply": "Oi! Sobre Black Friday, não tenho nenhuma campanha ativa para te confirmar, então não posso prometer nada nesse sentido.\n\nO Martin D-28 Dreadnought Natural está disponível:\n- Preço: R$ 11.499,00\n- No PIX: R$ 10.924,05 (5% de desconto)\n\nQuer que eu simule as parcelas no cartão?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_product",
+        "input": {
+         "name": "Martin D-28"
+        },
+        "result": {
+         "found": true,
+         "product_id": 93,
+         "name": "Martin D-28 Dreadnought Natural",
+         "category": "Violões",
+         "availability": "available",
+         "price": "R$ 11.499,00",
+         "pix_price": "R$ 10.924,05",
+         "description": "Lendário violão Martin D-28 com tampo sólido em Sitka Spruce e fundo em Rosewood. Referência mundial em sonoridade e construção.",
+         "specs": {
+          "top": "Sitka Spruce Sólido",
+          "back_sides": "East Indian Rosewood",
+          "neck": "Select Hardwood",
+          "strings": "steel",
+          "scale": "645mm",
+          "electronics": "no",
+          "color": "Natural"
+         }
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "customer-quoted-price-not-accepted",
+    "group": "regression",
+    "critical": true,
+    "now": "2026-11-03T10:00:00-04:00",
+    "passed": true,
+    "failures": [],
+    "seconds": [
+     3.294261799999731
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 246,
+     "cache_read_input_tokens": 8647,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0042014",
+    "turns": [
+     {
+      "customer": "vi o Takamine GD20 por R$ 1.500,00 em outro site, vcs fazem por esse preço?",
+      "reply": "Oi! Temos sim o Takamine GD20 Dreadnought Natural, e ele está disponível. Mas não consigo fazer R$ 1.500,00. Hoje o preço aqui é:\n\n- R$ 2.199,00 no preço normal\n- R$ 2.089,05 no PIX\n\nNão tenho nenhuma promoção ativa nele, e também não tenho autorização para igualar preço de outros sites. Posso simular as formas de pagamento e as parcelas, se você quiser.",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "terça, 03/11/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_product",
+        "input": {
+         "name": "Takamine GD20"
+        },
+        "result": {
+         "found": true,
+         "product_id": 95,
+         "name": "Takamine GD20 Dreadnought Natural",
+         "category": "Violões",
+         "availability": "available",
+         "price": "R$ 2.199,00",
+         "pix_price": "R$ 2.089,05",
+         "description": "Violão dreadnought Takamine com tampo sólido em cedro. Excelente para fingerstyle com timbre quente e definido.",
+         "specs": {
+          "top": "Cedro Sólido",
+          "back_sides": "Sapele",
+          "neck": "Mogno",
+          "strings": "steel",
+          "scale": "650mm",
+          "electronics": "no",
+          "color": "Natural"
+         }
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ ]
+}
