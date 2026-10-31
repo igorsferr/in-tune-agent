@@ -204,7 +204,7 @@ Rule 5 allows changing a case after results only to stop rejecting a correct ans
 
 Both became exclusions in the regression set (`e269a10`; re-grading the saved runs, they fail exactly those three replies), then a prompt fix (`1e3346e`). The re-run passed 16/16 (`…-175100-regression-*`). The same reading made explicit what is an assumption rather than a rule: §9 lets a customer ask for deletion over WhatsApp but says nothing about who carries it out, so the agent only registers the request (PLAN §4), and no one checks that the person asking owns the e-mail.
 
-### 18. Confirmation on the delivered code, and the freeze (18:52–19:05)
+### 18. Confirmation on the delivered code, and the freeze (18:55–18:59)
 - **Why a confirmation run.** Igor pointed out that the catalog and the prompt had changed after the model choice, so the 27/27 no longer described the code being delivered. The decision cases were run again on Sonnet 5.5 only, twice, on a clean tree. This does not reopen the choice: it checks that the result still holds. If a case had failed, the product would have been fixed, not the case. A case that rejected a correct answer would have followed rule 5.
 - **Result: 54/54**, with no critical or grounding failures (`evals/results/20261031-175528-*`, commit `8149b71`). The cases Igor flagged as at risk passed: "takamini gd20" is named back as the Takamine GD20, and violino, saxofone and cavaquinho get only the six categories that have products.
 - **Igor's reading.** Every statement was checked against the tool results and the manual. Three are true by the data but were not looked up in that conversation:
