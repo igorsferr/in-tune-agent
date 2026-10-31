@@ -67,8 +67,8 @@ def main(argv: list[str] | None = None) -> int:
             print(NO_KEY)
             return 1
         except anthropic.APIError as e:
+            # The agent has already put its history back in a valid state.
             print(f"[erro ao falar com o modelo: {e}] Tente de novo.")
-            agent.messages.pop()  # forget the unanswered message
             continue
         if args.show_tools:
             for call in reply.tool_calls:

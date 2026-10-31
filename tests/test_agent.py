@@ -1,4 +1,8 @@
-"""The loop, against a scripted fake client: no API key, no network."""
+"""The loop, against a scripted fake client: no API key, no network.
+
+Every test ends with `assert_valid_history`: whatever happened, the next
+customer message must be sendable.
+"""
 
 import json
 from datetime import datetime
@@ -6,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from in_tune.agent import SORRY, Agent
+from in_tune.agent import FALLBACK_BETA, SORRY, Agent
 from in_tune.policies import Policies
 from in_tune.store import Store
 from in_tune.toolbox import Toolbox
@@ -24,20 +28,51 @@ def tool_use(id_, name, input_):
 
 
 def response(*content, stop_reason="end_turn"):
-    usage = SimpleNamespace(input_tokens=10, output_tokens=5, cache_read_input_tokens=3)
+    usage = SimpleNamespace(
+        input_tokens=10, output_tokens=5, cache_read_input_tokens=3, cache_creation_input_tokens=1
+    )
     return SimpleNamespace(content=list(content), stop_reason=stop_reason, usage=usage)
 
 
 class FakeClient:
-    """Returns scripted responses and records every request."""
+    """Returns scripted responses (or raises scripted exceptions) and records requests."""
 
-    def __init__(self, *responses):
-        self.responses, self.requests = list(responses), []
+    def __init__(self, *script):
+        self.script, self.requests = list(script), []
         self.beta = SimpleNamespace(messages=SimpleNamespace(create=self._create))
 
     def _create(self, **kwargs):
         self.requests.append({**kwargs, "messages": list(kwargs["messages"])})
-        return self.responses.pop(0)
+        step = self.script.pop(0)
+        if isinstance(step, BaseException):
+            raise step
+        return step
+
+
+def _has_text(content) -> bool:
+    if isinstance(content, str):
+        return bool(content.strip())
+    return any(getattr(b, "type", None) == "text" and b.text.strip() for b in content)
+
+
+def assert_valid_history(messages):
+    """What the API needs before the next message: starts with the user, no empty
+    content, every tool_use answered by exactly its tool_results, ends in text."""
+    assert messages[0]["role"] == "user"
+    pending: set[str] = set()
+    for message in messages:
+        content = message["content"]
+        assert content not in ("", [], None)
+        if message["role"] == "assistant" and not isinstance(content, str):
+            assert not pending, "assistant spoke before tool results came back"
+            pending = {b.id for b in content if getattr(b, "type", None) == "tool_use"}
+        elif message["role"] == "user" and not isinstance(content, str):
+            assert {r["tool_use_id"] for r in content} == pending
+            pending = set()
+        else:
+            assert not pending, f"tool calls without results: {pending}"
+    assert not pending
+    assert messages[-1]["role"] == "assistant" and _has_text(messages[-1]["content"])
 
 
 @pytest.fixture(scope="module")
@@ -47,10 +82,13 @@ def parts(tmp_path_factory):
     return Toolbox(Store(), policies, clock=lambda: NOW, handoff_log=log), policies
 
 
-def make_agent(parts, *responses, **kwargs):
+def make_agent(parts, *script, **kwargs):
     toolbox, policies = parts
-    client = FakeClient(*responses)
+    client = FakeClient(*script)
     return Agent(toolbox, policies, client=client, **kwargs), client
+
+
+# --- happy paths ---------------------------------------------------------------
 
 
 def test_plain_answer_needs_one_request(parts):
@@ -58,7 +96,7 @@ def test_plain_answer_needs_one_request(parts):
     reply = agent.send("oi")
     assert reply.text == "Olá! Como posso ajudar?"
     assert reply.tool_calls == [] and len(client.requests) == 1
-    assert [m["role"] for m in agent.messages] == ["user", "assistant"]
+    assert_valid_history(agent.messages)
 
 
 def test_tool_result_goes_back_with_the_matching_id(parts):
@@ -70,11 +108,10 @@ def test_tool_result_goes_back_with_the_matching_id(parts):
     reply = agent.send("vocês estão abertos?")
     assert reply.text == "Hoje fechamos às 13h."
     assert [c.name for c in reply.tool_calls] == ["store_status"]
-    tool_message = client.requests[1]["messages"][-1]
-    assert tool_message["role"] == "user"
-    result = tool_message["content"][0]
+    result = client.requests[1]["messages"][-1]["content"][0]
     assert result["tool_use_id"] == "t1" and result["is_error"] is False
     assert json.loads(result["content"])["open_now"] is False  # Saturday 15:00
+    assert_valid_history(agent.messages)
 
 
 def test_parallel_calls_return_together_in_order(parts):
@@ -90,6 +127,7 @@ def test_parallel_calls_return_together_in_order(parts):
     agent.send("quanto custa o Takamine e como parcelo?")
     results = client.requests[1]["messages"][-1]["content"]
     assert [r["tool_use_id"] for r in results] == ["a", "b"]
+    assert_valid_history(agent.messages)
 
 
 def test_bad_tool_input_is_returned_as_an_error_not_raised(parts):
@@ -101,6 +139,18 @@ def test_bad_tool_input_is_returned_as_an_error_not_raised(parts):
     reply = agent.send("cadê meu pedido 1?")
     assert reply.tool_calls[0].is_error
     assert client.requests[1]["messages"][-1]["content"][0]["is_error"] is True
+    assert_valid_history(agent.messages)
+
+
+def test_history_carries_over_between_messages(parts):
+    agent, client = make_agent(parts, response(text("Oi, Ana!")), response(text("Claro.")))
+    agent.send("oi, sou a Ana")
+    agent.send("me ajuda?")
+    assert [m["role"] for m in client.requests[1]["messages"]] == ["user", "assistant", "user"]
+    assert_valid_history(agent.messages)
+
+
+# --- every other exit keeps the history valid -----------------------------------
 
 
 def test_runaway_tool_loop_stops_with_an_apology(parts):
@@ -110,21 +160,72 @@ def test_runaway_tool_loop_stops_with_an_apology(parts):
     agent, _ = make_agent(parts, *looping, max_steps=3)
     reply = agent.send("?")
     assert reply.text == SORRY and reply.stop_reason == "max_steps"
-    assert agent.messages[-1] == {"role": "assistant", "content": SORRY}
+    assert_valid_history(agent.messages)
 
 
-def test_refusal_keeps_the_history_valid(parts):
-    agent, _ = make_agent(parts, response(stop_reason="refusal"))
+@pytest.mark.parametrize("after_a_tool_step", [False, True])
+def test_refusal_keeps_the_history_valid(parts, after_a_tool_step):
+    script = [response(tool_use("t1", "store_status", {}), stop_reason="tool_use")] * (
+        after_a_tool_step
+    )
+    agent, _ = make_agent(parts, *script, response(stop_reason="refusal"))
     reply = agent.send("...")
     assert reply.text == SORRY and reply.stop_reason == "refusal"
-    assert agent.messages[-1] == {"role": "assistant", "content": SORRY}
+    assert_valid_history(agent.messages)
 
 
-def test_history_carries_over_between_messages(parts):
-    agent, client = make_agent(parts, response(text("Oi, Ana!")), response(text("Claro.")))
-    agent.send("oi, sou a Ana")
-    agent.send("me ajuda?")
-    assert [m["role"] for m in client.requests[1]["messages"]] == ["user", "assistant", "user"]
+def test_truncated_tool_call_is_answered_as_not_run(parts):
+    agent, _ = make_agent(
+        parts, response(tool_use("t1", "get_product", {"product_id": 9}), stop_reason="max_tokens")
+    )
+    reply = agent.send("?")
+    assert reply.text == SORRY and reply.tool_calls == []  # the cut-off call never ran
+    assert_valid_history(agent.messages)
+
+
+def test_empty_response_is_not_recorded_as_an_empty_turn(parts):
+    agent, _ = make_agent(parts, response())
+    assert agent.send("?").text == SORRY
+    assert_valid_history(agent.messages)
+
+
+def test_api_error_mid_loop_leaves_a_usable_session(parts):
+    agent, _ = make_agent(
+        parts,
+        response(tool_use("t1", "store_status", {}), stop_reason="tool_use"),
+        RuntimeError("529 overloaded"),
+        response(text("Agora sim!")),
+    )
+    with pytest.raises(RuntimeError):
+        agent.send("vocês estão abertos?")
+    assert_valid_history(agent.messages)
+    assert agent.send("e agora?").text == "Agora sim!"
+    assert_valid_history(agent.messages)
+
+
+def test_api_error_on_the_first_request_forgets_the_message(parts):
+    agent, _ = make_agent(parts, RuntimeError("connection reset"))
+    with pytest.raises(RuntimeError):
+        agent.send("oi")
+    assert agent.messages == []
+
+
+def test_ctrl_c_while_tools_run_is_recovered(parts, monkeypatch):
+    toolbox, _ = parts
+    agent, _ = make_agent(
+        parts, response(tool_use("t1", "store_status", {}), stop_reason="tool_use")
+    )
+
+    def interrupted(*_):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(agent.toolbox, "run", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        agent.send("?")
+    assert_valid_history(agent.messages)
+
+
+# --- request shape and accounting ----------------------------------------------
 
 
 def test_request_shape(parts):
@@ -132,18 +233,24 @@ def test_request_shape(parts):
     agent.send("oi")
     request = client.requests[0]
     assert request["system"][0]["cache_control"] == {"type": "ephemeral"}
+    assert request["cache_control"] == {"type": "ephemeral"}  # caches the growing history
     assert request["output_config"] == {"effort": "low"}
-    assert request["fallbacks"] == "default"  # Opus 5.5 supports server-side fallback
+    assert request["betas"] == [FALLBACK_BETA] and request["fallbacks"] == "default"
     assert [t["name"] for t in request["tools"]][0] == "search_products"
 
 
-def test_haiku_gets_no_fallback_parameter(parts):
-    agent, client = make_agent(parts, response(text("ok")), model="claude-haiku-5-5")
+@pytest.mark.parametrize(
+    ("model", "has_fallback"),
+    [("claude-opus-5-5", True), ("claude-sonnet-5-5", True), ("claude-haiku-5-5", False)],
+)
+def test_fallback_only_where_supported(parts, model, has_fallback):
+    agent, client = make_agent(parts, response(text("ok")), model=model)
     agent.send("oi")
-    assert "fallbacks" not in client.requests[0] and "betas" not in client.requests[0]
+    assert ("fallbacks" in client.requests[0]) is has_fallback
+    assert ("betas" in client.requests[0]) is has_fallback
 
 
-def test_usage_is_summed_over_steps(parts):
+def test_usage_is_summed_over_steps_including_cache_writes(parts):
     agent, _ = make_agent(
         parts,
         response(tool_use("t1", "store_status", {}), stop_reason="tool_use"),
@@ -153,4 +260,5 @@ def test_usage_is_summed_over_steps(parts):
         "input_tokens": 20,
         "output_tokens": 10,
         "cache_read_input_tokens": 6,
+        "cache_creation_input_tokens": 2,
     }
