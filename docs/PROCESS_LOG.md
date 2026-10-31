@@ -84,3 +84,6 @@ All were fixed in follow-up commits on the same PR. Lessons carried forward:
 3. Take times in this log from `git log`, not memory.
 4. Seed evals with the brief's four sample questions.
 5. Normalise BRL amounts and phone numbers in phase 1, since the grounding check and order verification depend on them.
+
+### 10. The case's rules decide
+After the review, Igor set a standing rule: the case's own instructions (the brief and the recruiter's e-mail) always override his preferences. The submission channel was the first decision it changed. The two sources name different channels, so both are used: an e-mail reply with the repository link, and the PDF through the form.
