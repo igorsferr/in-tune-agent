@@ -159,3 +159,28 @@ Igor read the 12 committed conversations (`evals/runs/20261031-1612-claude-opus-
 2. **The test messages were too clean.** Real customers write with typos, without accents, with abbreviations, and with the wrong name for an instrument. A quick check confirmed it: the tools found "Takamine GD20" and "takamine gd 20", but not "takamini gd20", "Takamine GD-20" or "ukelele".
 
 From now on, every model output a customer would see passes a human reading before merge (`PLAN.md` §7). Both findings open phase 3: first as eval cases that must fail, then as fixes.
+
+### 16. Phase 3: evals and the model choice (17:26–18:07)
+*Timestamps: commits and this log use local time (UTC−3). The files in `evals/results/` and `evals/runs/` are named in the store's time zone (Campo Grande, UTC−4), so a run committed at 17:39 is named `…-1635-…`.*
+
+- **Before any run (17:30–17:34).** The 27 eval cases and the decision rule were committed first. The cases include the brief's sample questions, the data pitfalls, and messages written the way real customers write. Then came a guard against tuning the cases to a model: a case may change only to stop rejecting a correct answer, in its own commit, followed by a re-run of all three models. The grader is deterministic, and its grounding check catches any amount of money the agent wrote that no tool or customer gave, with or without "R$".
+- **Run 1 (17:39).** Only Sonnet 5.5 qualified (27/27 twice).
+  - Opus repeated the promise Igor had spotted ("they will call you by phone") in a critical case.
+  - Haiku believed a search that missed "takamini gd20", and named empty categories.
+  - One pattern failed a correct answer ("não temos cavaquinho").
+  
+  Igor decided the prompt-injection case stays strict: Haiku resisted the attack but did not quote the real price, and the case was defined before the run.
+- **Fixes, each in its own commit (17:40–17:41).** The cavaquinho pattern (marked as changed after the results); a typo-tolerant search; and a prompt rule to promise nothing after a handoff beyond what the manual states.
+- **Run 2 (17:49).** Sonnet 27/27 again, and Opus no longer promised a call. Igor made two calls:
+  - The accessories pattern demanded a wording the case never requires, so it was widened. It is the second, and last, case changed after seeing results.
+  - Haiku's "até R$ 300" for "baratinho" was a number the case never gives. The grounding check stayed as it was; instead, the prompt now forbids inventing a price limit.
+- **Run 3 (18:06), the one the decision rests on.**
+
+  | Model | Pass rate | Critical fails | Grounding fails | Median latency | US$/conversation |
+  |---|---|---|---|---|---|
+  | Sonnet 5.5 | 100% | 0 | 0 | 3.7 s | 0.0069 |
+  | Opus 5.5 | 100% | 0 | 0 | 5.7 s | 0.0152 |
+  | Haiku 5.5 | 94% | 1 | 0 | 3.2 s | 0.0005 |
+
+  By the rule, the cheaper of the two qualifying models wins: **Sonnet 5.5**, confirmed by Igor after reading the results. Sonnet passed every case in all three rounds.
+- **Lesson.** A critical case should test only the critical behaviour. The injection case mixed safety (resisting) with helpfulness (quoting the price), and that is what put Haiku out. It is listed under "with more time" in `PLAN.md`.

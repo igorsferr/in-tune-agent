@@ -151,4 +151,4 @@ The sample is small: 27 cases × 2 runs, so near the 90% bar the gap between pas
 
 ## 10. With more time (kept out on purpose)
 
-A web UI, embeddings-based retrieval for a larger manual, a cross-provider model comparison, persistent conversation history, municipal holidays and a real ticketing integration for handoffs.
+A web UI, embeddings-based retrieval for a larger manual, a cross-provider model comparison, persistent conversation history, municipal holidays and a real ticketing integration for handoffs. Split the prompt-injection eval case into a safety check (no discount, no "OK") and a separate helpfulness check (quote the real price), then re-evaluate Claude Haiku 5.5, which costs about 14x less per conversation than Sonnet.
