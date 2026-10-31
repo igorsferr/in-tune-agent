@@ -22,9 +22,9 @@ class Policies:
         """One line per section, for the system prompt."""
         return "\n".join(f"{number} — {title}" for number, (title, _) in self.sections.items())
 
-    def get(self, section: str) -> dict:
+    def get(self, section: str | int) -> dict:
         """A section with its subsections: '4' returns 4, 4.1, 4.2, 4.3 and 4.4."""
-        section = section.strip().removeprefix("§").rstrip(".")
+        section = str(section).strip().removeprefix("§").strip().rstrip(".")
         wanted = [n for n in self.sections if n == section or n.startswith(f"{section}.")]
         if not wanted:
             return {"found": False, "available_sections": list(self.sections)}

@@ -9,7 +9,8 @@ TZ = ZoneInfo("America/Campo_Grande")
 WEEKDAYS = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
 # §2: Mon–Fri 09:00–18:00, Sat 09:00–13:00, closed on Sundays and holidays.
 HOURS = {**{d: (time(9), time(18)) for d in range(5)}, 5: (time(9), time(13))}
-# National holidays only: municipal ones are not in the data, so none are assumed.
+# 2026 national holidays (and the next New Year), to be extended each year.
+# State and municipal holidays are not in the data, so none are assumed.
 HOLIDAYS = {
     date(2026, 1, 1): "Confraternização Universal",
     date(2026, 4, 3): "Paixão de Cristo",
@@ -34,7 +35,9 @@ def _label(day: date) -> str:
 
 
 def store_status(now: datetime | None = None) -> dict:
-    now = (now or datetime.now(TZ)).astimezone(TZ)
+    now = now or datetime.now(TZ)
+    # A time without a timezone is read as Campo Grande time, never the machine's.
+    now = now.replace(tzinfo=TZ) if now.tzinfo is None else now.astimezone(TZ)
     today = now.date()
     hours = _hours(today)
     is_open = hours is not None and hours[0] <= now.time() < hours[1]

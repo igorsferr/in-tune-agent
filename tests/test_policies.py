@@ -31,9 +31,13 @@ def test_parent_section_includes_its_subsections(policies):
     assert [s["section"] for s in found["sections"]] == ["4", "4.1", "4.2", "4.3", "4.4"]
 
 
-@pytest.mark.parametrize("requested", ["5.2", "§5.2", " 5.2. "])
+@pytest.mark.parametrize("requested", ["5.2", "§5.2", "§ 5.2", " 5.2. "])
 def test_section_ids_are_forgiving(policies, requested):
     assert policies.get(requested)["sections"][0]["title"] == "Entregas para Outras Cidades"
+
+
+def test_a_numeric_section_id_works(policies):
+    assert policies.get(4)["sections"][0]["title"] == "Política de Trocas e Devoluções"
 
 
 def test_unknown_section_lists_what_exists(policies):

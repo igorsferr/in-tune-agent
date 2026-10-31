@@ -19,8 +19,15 @@ def brl(value: Decimal | float | str) -> str:
 
 
 def parse_brl(text: str) -> Decimal:
-    """Inverse of `brl`: "R$ 1.299,00" -> Decimal("1299.00")."""
-    number = text.replace("R$", "").strip().replace(".", "").replace(",", ".")
+    """Inverse of `brl`: "R$ 1.299,00" -> Decimal("1299.00").
+
+    Also accepts a dot as the decimal mark when there is no comma ("R$ 799.90").
+    """
+    number = text.replace("R$", "").strip()
+    if "," in number:
+        number = number.replace(".", "").replace(",", ".")
+    elif not re.search(r"\.\d{2}$", number):
+        number = number.replace(".", "")  # "1.299" is a thousands separator
     return to_cents(number)
 
 

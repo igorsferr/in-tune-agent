@@ -8,6 +8,7 @@ customer refer to it later.
 from __future__ import annotations
 
 import json
+import secrets
 from datetime import datetime
 from pathlib import Path
 
@@ -27,7 +28,8 @@ def handoff_to_human(
     if reason not in REASONS:
         return {"registered": False, "error": f"reason must be one of {list(REASONS)}"}
     now = (now or datetime.now(TZ)).astimezone(TZ)
-    protocol = f"EM-{now:%Y%m%d-%H%M%S}"
+    # The random suffix keeps two handoffs in the same second apart.
+    protocol = f"EM-{now:%Y%m%d-%H%M%S}-{secrets.token_hex(2).upper()}"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("a", encoding="utf-8") as log:
         entry = {

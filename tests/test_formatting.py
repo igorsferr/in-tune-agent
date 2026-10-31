@@ -25,6 +25,14 @@ def test_parse_brl_round_trips():
 
 
 @pytest.mark.parametrize(
+    ("text", "expected"),
+    [("R$ 799.90", "799.90"), ("R$ 1.299", "1299.00"), ("R$ 35", "35.00")],
+)
+def test_parse_brl_accepts_other_common_writings(text, expected):
+    assert parse_brl(text) == Decimal(expected)
+
+
+@pytest.mark.parametrize(
     "phone", ["(67) 99812-3456", "67 99812 3456", "+55 (67) 99812-3456", "67998123456"]
 )
 def test_phone_digits_normalises_common_formats(phone):

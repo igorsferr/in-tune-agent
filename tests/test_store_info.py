@@ -42,6 +42,24 @@ def test_next_opening(moment, expected_next):
     assert store_status(moment)["next_opening"] == expected_next
 
 
+@pytest.mark.parametrize(
+    ("moment", "is_open"),
+    [
+        (at(2026, 11, 3, 9, 0), True),  # opening minute
+        (at(2026, 11, 3, 8, 59), False),
+        (at(2026, 11, 7, 13, 0), False),  # Saturday closing time
+        (at(2026, 11, 7, 12, 59), True),
+        (at(2026, 11, 8, 11, 0), False),  # an ordinary Sunday
+    ],
+)
+def test_opening_hour_boundaries(moment, is_open):
+    assert store_status(moment)["open_now"] is is_open
+
+
+def test_naive_time_is_read_as_campo_grande_time():
+    assert store_status(datetime(2026, 11, 3, 9, 30))["now"].endswith("09:30")
+
+
 def test_converts_other_timezones_to_campo_grande():
     # 14:30 in São Paulo (UTC−3) is 13:30 in Campo Grande (UTC−4): Saturday, closed.
     status = store_status(datetime(2026, 10, 31, 14, 30, tzinfo=ZoneInfo("America/Sao_Paulo")))
