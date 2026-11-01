@@ -109,6 +109,10 @@ def run_case(case: Case, model: str, effort: str, store: Store, policies: Polici
                 "customer": text,
                 "reply": reply.text,
                 "stop_reason": reply.stop_reason,
+                # Requested is what we asked for; reported is what the API said
+                # served it (a fallback can differ), not checked any other way.
+                "model_requested": model,
+                "model_reported": ", ".join(reply.models) or "unknown",
                 "tool_calls": [
                     {
                         "name": c.name,
