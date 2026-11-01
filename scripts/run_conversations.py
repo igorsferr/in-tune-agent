@@ -54,7 +54,8 @@ CONVERSATIONS = {
 }
 
 # The README's examples: the brief's four questions inside realistic exchanges,
-# plus a data conflict. Customers write the way they do on WhatsApp.
+# an accessory and an off-topic question, and a data conflict. Customers write
+# the way they do on WhatsApp.
 EXAMPLES = {
     "01-violoes-ate-1000": [
         "Quais opções de violões disponíveis custando até R$1000?",
@@ -67,6 +68,8 @@ EXAMPLES = {
     "03-endereco-e-devolucao": [
         "Qual o endereço da loja?",
         "Me arrependi da minha compra, posso devolver meu pedido?",
+        "vcs vendem corda de violão?",
+        "e qual a capital da Austrália?",
     ],
     "04-pedido-atrasado": [
         "oi, meu pedido 8 ainda não chegou",

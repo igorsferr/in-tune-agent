@@ -32,7 +32,7 @@ customer ─▶ CLI ─▶ agent loop (Claude, tool use) ─▶ Python tools ─
 - **Deterministic tools for structured data.** Filtering, discounts and installment rules are plain Python: testable and unable to hallucinate.
   The 7 tools are `search_products`, `get_product`, `check_order`, `quote_payment`, `get_policy`, `store_status` and `handoff_to_human`.
 - **Policy retrieval by section.** The 8-page manual is split into its numbered sections, and the agent asks for the one it needs (decision log, §8).
-- **A hand-written tool-use loop of about 60 lines.** It uses the Anthropic SDK directly, with no agent framework, so every decision under evaluation stays explainable line by line.
+- **A plain tool-use loop of about 60 lines** (planned; as built, `agent.py` is 176 lines with docstrings and recovery paths). It uses the Anthropic SDK directly, with no agent framework, so every decision under evaluation stays explainable line by line.
 - **Deliberately not used:**
   - a SQL agent (model-written SQL over customer data, for 6 small tables);
   - a vector database (an 8-page manual with clear sections);
@@ -74,7 +74,7 @@ customer ─▶ CLI ─▶ agent loop (Claude, tool use) ─▶ Python tools ─
 ## 5. Quality
 
 - **Unit tests** (pytest, no API key) for every tool and rule above. CI runs them with ruff on every push.
-- **About 20 eval cases** covering catalog, prices, orders, policy, out of scope and the data pitfalls. They start from the brief's four sample questions. Each case lists the expected tool and the facts that must or must not appear.
+- **About 20 eval cases** (planned; as built, 27, plus an 8-case post-decision regression set) covering catalog, prices, orders, policy, out of scope and the data pitfalls. They start from the brief's four sample questions. Each case lists the expected tool and the facts that must or must not appear.
 - **Grounding check:** every R$ value in an answer must appear in that turn's tool results. Values are normalised first, so `799.9` matches "R$ 799,90".
 - **Model choice by numbers:** Claude Haiku 5.5, Sonnet 5.5 and Opus 5.5 on the same eval set, compared on pass rate, grounding, latency and cost.
 
@@ -96,6 +96,8 @@ in-tune-agent/
 ```
 
 ## 7. Phases (one issue and one PR each)
+
+*This schedule is the plan as written before any code. As built, every phase's commits are dated 2026-10-31, and phase 4 had a second PR (#11) after a final audit; the times are in [`PROCESS_LOG.md`](PROCESS_LOG.md).*
 
 **Target: submit on 2026-11-01 (Sunday) by 22:00.** That leaves about two days of slack before the earliest plausible deadline. Monday is reserved for emergencies only, with an internal hard limit of **2026-11-02 12:00**, still 1.5 days early.
 
@@ -126,7 +128,7 @@ Decisions are recorded here as they are made, each with its reason. The README s
 | Conflicting data | Structured fields win; conflicts flagged, never confirmed | Avoids stating what the store cannot guarantee |
 | Prompt strategy | A stable system prompt holding the persona, the rules of §2 and §4 as short directives, and when to use each tool. No facts in the prompt: every fact comes from a tool. Refined in phase 2 against the evals. | Keeps answers grounded and the prompt cacheable |
 | Conversation history | Kept in memory for the session only, no persistence | A CLI run is one customer conversation; persisting it would retain personal data with no benefit for the case |
-| Provider | Anthropic, paid key | Free tiers that train on content conflict with LGPD; a Haiku-class model costs cents per eval run |
+| Provider | Anthropic, paid key | Google's pricing pages (checked 2026-10-31) say Gemini's free tier uses submitted content to improve Google's products and the paid tier does not: a poor fit for customer data under LGPD. Data governance and eval reliability matter more than a few dollars; a Haiku-class model costs cents per eval run |
 | Model | **Claude Sonnet 5.5**, effort `medium` | Under the rule below, on the third run (`evals/results/20261031-1650-summary.md`): Sonnet and Opus 5.5 both passed 27/27 twice; Sonnet costs ~US$ 0.0069 per conversation against ~US$ 0.0152 and answers faster (median 3.7 s against 5.7 s). Sonnet passed every case in all three runs as graded; the PR #9 review found it had promised contact in run 1 and offered empty categories in run 3, which the stricter post-decision set (`evals/regression.json`) now catches, and which do not change the choice. Haiku 5.5 (~US$ 0.0005) was disqualified by the critical injection case: it *resisted* the attack, but the case also required quoting the real price, which is a helpfulness criterion inside a safety case. The case was kept as written because it was fixed before any run. |
 | Interface | CLI | The brief's focus is the agent working |
 | Customer verification | Order id + phone or e-mail | Minimum check that keeps order data private (one e-mail is shared by two customers) |
