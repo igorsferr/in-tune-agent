@@ -1,13 +1,14 @@
 # in-tune-agent
 
-A customer service agent for **Empório da Música**, the fictional instrument store in Artefact's AI Engineer case, solved the simple way. It is a hand-written tool-use loop around Claude, seven small deterministic Python tools over the store's CSVs and manual, and one system prompt. The agent answers questions about products, prices, payment, orders, shipping and store rules. It takes prices, stock, order status and store rules from tools, and hands problems to the team instead of improvising.
+A customer service agent for **Empório da Música**, the fictional instrument store in Artefact's AI Engineer case, solved the simple way. It is a plain tool-use loop around Claude, with no framework, seven small deterministic Python tools over the store's CSVs and manual, and one system prompt. The agent answers questions about products, prices, payment, orders, shipping and store rules. It takes prices, stock, order status and store rules from tools, and hands problems to the team instead of improvising.
 
 **Start here:** this README, then [`examples/`](examples/), then the loop in [`src/in_tune/agent.py`](src/in_tune/agent.py), the prompt in [`prompts.py`](src/in_tune/prompts.py) and the [`tools/`](src/in_tune/tools/). The agent is that loop, seven tools and one prompt; `evals/` and `docs/` are the evidence behind it, not part of it.
 
 **Assumptions** (full table in [`docs/PLAN.md`](docs/PLAN.md) §4):
-- **Language.** The store's customers write in Portuguese, so the agent answers in Brazilian Portuguese. Everything else in this delivery is in English, as the case asks, including a full English translation of each example conversation.
+- **Language.** The store's customers are in Campo Grande, so the prompt tells the agent to answer in Brazilian Portuguese. In testing it kept Portuguese for English messages, even when asked to switch, and answered a Spanish message in Spanish. Docs, code and commits are in English, as the case asks, and each example has a full English translation; the chat, CLI messages included, is in Portuguese.
 - **Stalled orders.** An order counts as stalled after 7 days pending or confirmed without dispatch, and it goes to the team. The manual's own clocks are shorter.
 - **Data deletion.** A deletion request goes to the team. The manual (§9) says a customer may ask, not who carries it out.
+- **Partner stores.** The manual (§7.1) says to suggest them when possible but names none, so the agent names none.
 
 ## Run it
 
@@ -32,7 +33,7 @@ Options: `--model` (default `claude-sonnet-5-5`), `--effort low|medium|high`, an
 customer ─▶ CLI ─▶ tool-use loop (Claude) ─▶ 7 Python tools ─▶ CSV data · manual sections
 ```
 
-- **No framework.** The loop is written by hand on the Anthropic SDK, so every step can be read and tested. It keeps the conversation valid after refusals, truncation and API errors.
+- **No framework.** The loop is written directly on the Anthropic SDK, so every step can be read and tested. It keeps the conversation valid after refusals, truncation and API errors.
 - **Deterministic tools:**
   - search, prices and promotions;
   - installment minimums and PIX rules;
@@ -51,7 +52,7 @@ customer ─▶ CLI ─▶ tool-use loop (Claude) ─▶ 7 Python tools ─▶ C
   - the CSVs are read as provided, with no silent fixes. A product is for sale only when it is active and in stock;
   - when a product's name, description and specs contradict each other, the tool flags the attribute and the agent does not confirm it;
   - an order's stored total is reported as is, never recomputed from its items.
-- **Prompt strategy.** The system prompt holds rules, not facts:
+- **Prompt strategy.** The system prompt holds rules and the store's fixed contacts; prices, stock, orders and policy text come from tools:
   - a price, stock level, deadline or order status must come from a tool in that turn;
   - it sets the store's tone (manual §7.1);
   - it says which source wins when the data contradicts itself ([`docs/DATA_AUDIT.md`](docs/DATA_AUDIT.md) lists 26 pitfalls in the data and the manual);
@@ -59,7 +60,7 @@ customer ─▶ CLI ─▶ tool-use loop (Claude) ─▶ 7 Python tools ─▶ C
   
   The prompt is the same in every conversation, so it is cached.
 - **Interface: a CLI.** The case's focus is the agent working, and a terminal chat is the least code that shows it.
-- **Provider: Anthropic, with a paid key.** Free tiers that may train on the content conflict with LGPD for customer data, and a full test run costs cents.
+- **Provider: Anthropic, with a paid key.** Google's pricing pages (checked 2026-10-31) say Gemini's free tier uses submitted content to improve Google's products and the paid tier does not. That makes a free tier a poor fit for customer data under LGPD. A full test run costs cents.
 - **Conversation history: in memory, for the session only.** A CLI run is one customer conversation, and saving it would keep personal data for no benefit to the case.
 
 ## Model choice: how we know it works
@@ -94,14 +95,21 @@ Five real conversations with the agent, each in the original Portuguese with a f
 ## Known limitations
 
 - **The test set is small** (27 conversations × 2). The money check proves an amount came from some tool result or from the customer, not that it belongs to the product named.
-- **Handoffs:**
-  - they go to a local JSONL log, with contacts in plain text, not to a ticketing system;
-  - order ids are sequential, so a lookup also needs the order's phone or e-mail;
-  - a data-deletion request is registered without verifying who asks. The manual (§9) does not say who carries the deletion out, so routing it to the team is an assumption.
+- **Handoffs and order lookups:**
+  - handoffs go to a local JSONL log, not to a ticketing system. Each entry keeps the contact and the agent's summary (name, order details) in plain text, with no retention limit;
+  - a handoff, for any reason, records the contact and summary the customer gave, unverified. For data deletion, the manual (§9) does not say who carries it out, so routing it to the team is an assumption;
+  - order ids are sequential, and the phone on an order is not a secret. A lookup needs the order's phone or e-mail, but there is no attempt limit: the guard against guessing is the model's, and a new conversation resets it;
+  - the phone must include the area code and the ninth digit.
+- **Tools answer narrower questions than customers ask:**
+  - `store_status` answers only about now. Asked about another day, the agent may miss a holiday: on Saturday 31/10 it said the store opens on Monday, 02/11, which is Finados;
+  - search does not translate colours (specs are in English, so "bateria azul" finds nothing although a blue kit exists), and the typo correction can replace a valid word ("branco" became "braço");
+  - the manual does not list the metro-area cities. The tool gives the metro shipping rule, and the model decided alone that a nearby city (Sidrolândia) is outside it.
 - **The data-conflict detector** is a heuristic built from this dataset. `data/policies.md` keeps some table artifacts from the PDF extraction.
-- **Seen when reading conversations:**
+- **Seen in conversations** (ours, and a 275-conversation audit before submission):
   - the agent sometimes adds true facts it did not look up in that conversation (instrument types, general music knowledge);
-  - it may ask "quer fechar a compra?" although it cannot place orders; when the customer says yes, it says so and gives the store's contacts;
+  - it sometimes does its own arithmetic (a price difference, the rest of a split payment, quantity × price). It was right every time, but the amount did not come from a tool;
+  - it sometimes generalizes an earlier tool result instead of checking: it said split payment is never accepted (the manual allows it above R$ 2.000), and late in a long conversation it extended free shipping to an item under R$ 500;
+  - it often offers to close the purchase (3 of 3 runs of example 1) or to reserve a unit, although it cannot; when the customer says yes, it says so and gives the store's contacts;
   - asked for a 5-string bass, it opens with "temos sim" (yes, we have) before saying it cannot confirm the strings (example 5);
   - installments are rounded per payment, so 3 × R$ 199,97 adds up to one cent above the price;
   - a Sonnet or Opus request that the model declines may be re-run on another model (server-side fallback; Haiku has none). The eval files do not record which model served each reply; a separate audit of the delivered code found all 71 replies it checked served by Sonnet 5.5.
