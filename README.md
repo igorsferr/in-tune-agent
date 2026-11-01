@@ -130,7 +130,9 @@ I read the agent's replies myself:
 
 Those readings changed the agent. I caught an invented "they will call you". I also had Claude Code check every statement against the case, and that check found an unverified "e-mail cadastrado" and an offer to take a price-match request to the team.
 
-A separate, read-only Claude session reviewed each pull request before merge. Each phase had one issue and one PR, and the history was never rewritten.
+A separate, read-only Claude session reviewed each pull request before merge; the findings and fixes are in the log (§9, §12, §14, §17, §20, §21). Each phase had one issue and one PR, except phase 4: PR #11 came after a final audit, for documentation and example 3 only. The history was never rewritten.
+
+Before submitting, I ran two more read-only reviews: a 28-persona review of the repository, with a tool I built with AI agents, and a Claude Code audit that ran 275 simulated customer conversations. The prompt and tools stayed frozen; the behaviours the audit found are under Known limitations.
 
 The full record:
 - [`docs/PLAN.md`](docs/PLAN.md): plan, rules and decision log;
