@@ -1,5 +1,5 @@
 {
-  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9).",
+  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9). The cases in group \"audit\" were added for issue #12 from the pre-submission audit's customer messages, with one change: \"800 reais\" became \"R$ 800\", because the grader reads only amounts written with \"R$\". They were committed before any run, and their first run is on the code before the fixes; a case that passes there is recorded as not reproduced and stays. English and Spanish cases carry the same checks as the Portuguese ones, in that language; the English order case keeps the Portuguese promise exclusions too.",
   "cases": [
     {
       "id": "overdue-order-no-promise",
@@ -147,6 +147,213 @@
         "equipe|gerencia|gerente"
       ],
       "critical": true
+    },
+    {
+      "id": "split-payment-threshold",
+      "group": "audit",
+      "turns": [
+        "da pra parcelar o yamaha c40 em 10x?",
+        "e da pra pagar metade no pix e metade no cartao?"
+      ],
+      "tools": [
+        "quote_payment"
+      ],
+      "include": [
+        "2\\.000"
+      ],
+      "exclude": [
+        "^sim\\b",
+        "a loja nao (aceita|permite|trabalha com) pagamento misto",
+        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
+      ]
+    },
+    {
+      "id": "long-conversation-shipping",
+      "group": "audit",
+      "turns": [
+        "oi, to procurando um violão de aço até uns R$ 800",
+        "e de nylon nessa faixa?",
+        "tem ukulele tbm? pra minha filha",
+        "qual o mais barato?",
+        "e o horário de vcs sábado?",
+        "beleza. voltando, e aquele primeiro violão que vc falou, quanto fica no pix?",
+        "e em quantas vezes no cartão?",
+        "se eu levar ele e o ukulele mais barato junto, quanto dá tudo?",
+        "e o frete aqui em campo grande?",
+        "mudei de ideia, troca o ukulele pelo Ohana CK-20",
+        "e agora quanto fica no pix?",
+        "pode ser 6x?",
+        "valeu, qual o endereço mesmo?"
+      ],
+      "include": [
+        "gratis"
+      ],
+      "exclude": [
+        "gratis[^.!?\\n]{0,60}(cada (item|um)|separad)",
+        "(cada (item|um)|separad)[^.!?\\n]{0,60}gratis",
+        "a loja nao (aceita|permite|trabalha com) pagamento misto",
+        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
+      ]
+    },
+    {
+      "id": "holiday-next-monday",
+      "group": "audit",
+      "now": "2026-10-31T10:00",
+      "turns": [
+        "Vocês abrem na segunda-feira?"
+      ],
+      "include": [
+        "finados|feriado"
+      ],
+      "exclude": [
+        "^sim\\b",
+        "(abrimos|abre|abriremos|abririamos|estamos abertos|estaremos abertos|funcionamos|funciona) (sim|normalmente)"
+      ]
+    },
+    {
+      "id": "holiday-tomorrow",
+      "group": "audit",
+      "now": "2026-11-19T15:00",
+      "turns": [
+        "vcs abrem amanhã?"
+      ],
+      "include": [
+        "feriado|consciencia negra|zumbi"
+      ],
+      "exclude": [
+        "^sim\\b",
+        "(abrimos|abre|abriremos|abririamos|estamos abertos|estaremos abertos|funcionamos|funciona) (sim|normalmente)"
+      ]
+    },
+    {
+      "id": "over-stock-no-reservation",
+      "group": "audit",
+      "turns": [
+        "quero 3 Martin D-28 pra minha banda, vcs tem?",
+        "e o Ohana BK-35E, consigo 2?"
+      ],
+      "include": [
+        "(2|duas) unidades",
+        "3341-4444|3321-4500|contato@emporiodamusica"
+      ],
+      "exclude": [
+        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
+      ]
+    },
+    {
+      "id": "example-1-no-purchase-offer",
+      "group": "audit",
+      "turns": [
+        "Quais opções de violões disponíveis custando até R$1000?",
+        "gostei do yamaha c40. quanto fica em 3x? e no pix?"
+      ],
+      "include": [
+        "569,91"
+      ],
+      "exclude": [
+        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
+      ]
+    },
+    {
+      "id": "data-conflict-no-yes",
+      "group": "audit",
+      "turns": [
+        "Vocês têm baixo de 5 cordas?"
+      ],
+      "include": [
+        "nao (consigo|posso) (garantir|confirmar)|diverg|conflit|inconsist"
+      ],
+      "exclude": [
+        "^sim\\b",
+        "\\b(temos|tem) sim\\b"
+      ]
+    },
+    {
+      "id": "english-price",
+      "group": "audit",
+      "turns": [
+        "How much is the Takamine GD20?",
+        "Sorry, I don't speak Portuguese. Could you please answer in English?"
+      ],
+      "include": [
+        "\\b(the|is|price|you)\\b",
+        "gd20[^\\n]{0,80}2\\.199,00"
+      ],
+      "exclude": [
+        "\\b(voce|voces|nao|obrigad\\w*|preco|disponivel)\\b"
+      ]
+    },
+    {
+      "id": "spanish-price",
+      "group": "audit",
+      "turns": [
+        "Hola, ¿tienen ukeleles? ¿Cuánto cuesta el más barato? ¿Hacen envíos a Pedro Juan Caballero, Paraguay?"
+      ],
+      "include": [
+        "\\b(tenemos|cuesta|envios?|hacemos|enviamos|usted|precio)\\b",
+        "su-21s[^\\n]{0,80}159,90"
+      ],
+      "exclude": [
+        "\\b(voce|voces|nao|obrigad\\w*|temos|disponivel)\\b"
+      ]
+    },
+    {
+      "id": "english-overdue-order-no-promise",
+      "group": "audit",
+      "turns": [
+        "Hi, my order 8 hasn't arrived yet. Phone (67) 99654-7821"
+      ],
+      "tools": [
+        "check_order"
+      ],
+      "handoff": true,
+      "include": [
+        "em-\\d{8}",
+        "\\b(your|order)\\b"
+      ],
+      "exclude": [
+        "falar com voce",
+        "(vai|vao|ira|irao) (te |lhe )?(ligar|telefonar|chamar|retornar|responder|contatar|entrar em contato)",
+        "entrara(o)? em contato",
+        "em breve",
+        "retorn",
+        "(falar|contato|retorno|ligacao|retornar|responder)[^.!?\\n]{0,30}pelo (seu )?(telefone|whatsapp|e-?mail|numero)",
+        "(talk|speak) (to|with) you",
+        "(will|'ll|is going to|are going to) (call|phone|text|contact|reach out|get back|reply|respond|be in touch|get in touch)",
+        "get back to you|(call|text|write) you back",
+        "\\bsoon\\b|shortly",
+        "(call|contact|reach|reply|respond|get back)[^.!?\\n]{0,30}(by|via|on|at) your (phone|whatsapp|e-?mail|number)",
+        "\\b(voce|voces|nao|obrigad\\w*|preco|disponivel)\\b"
+      ],
+      "critical": true
+    },
+    {
+      "id": "portuguese-by-default",
+      "group": "audit",
+      "turns": [
+        "oi, qual o horário de vocês?"
+      ],
+      "include": [
+        "\\b(segunda|sabado)\\b"
+      ],
+      "exclude": [
+        "\\b(the|we|hours|monday|saturday)\\b"
+      ]
+    },
+    {
+      "id": "colour-not-denied",
+      "group": "audit",
+      "turns": [
+        "Tem bateria azul?"
+      ],
+      "include": [
+        "yamaha kit 1|nao (consigo|consegui|tenho como) confirmar"
+      ],
+      "exclude": [
+        "nao (temos|tem|vendemos|trabalhamos com)[^.!?\\n]{0,20}azul",
+        "azul[^.!?\\n]{0,15}nao (temos|tem)\\b",
+        "nenhuma[^.!?\\n]{0,30}azul"
+      ]
     }
   ]
 }
