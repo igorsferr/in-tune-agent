@@ -1,5 +1,5 @@
 {
-  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9). The cases in group \"audit\" were added for issue #12 from the pre-submission audit's customer messages, with one change: \"800 reais\" became \"R$ 800\", because the grader reads only amounts written with \"R$\". They were committed before any run, and their first run is on the code before the fixes; a case that passes there is recorded as not reproduced and stays. English and Spanish cases carry the same checks as the Portuguese ones, in that language; the English order case keeps the Portuguese promise exclusions too. holiday-tomorrow-closed and holiday-next-monday-closed were added after the baseline, before any fix, because holiday-tomorrow passed with replies that said the store opens on the holiday; they require the reply to say the store is closed.",
+  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9). The cases in group \"audit\" were added for issue #12 from the pre-submission audit's customer messages, with one change: \"800 reais\" became \"R$ 800\", because the grader reads only amounts written with \"R$\". They were committed before any run, and their first run is on the code before the fixes; a case that passes there is recorded as not reproduced and stays. English and Spanish cases carry the same checks as the Portuguese ones, in that language; the English order case keeps the Portuguese promise exclusions too. holiday-tomorrow-closed and holiday-next-monday-closed were added after the baseline, before any fix, because holiday-tomorrow passed with replies that said the store opens on the holiday; they require the reply to say the store is closed. After the final run (26ce49b), a coverage review changed the criteria, and this is not a PLAN §8 rule-5 change: long-conversation-shipping was replaced by long-conversation-ukulele-alone, which keeps its first nine turns, then drops the guitar and checks that the ukulele alone pays R$ 35,00 (the old case never left the free-shipping range); split-payment-above-threshold was added as the positive side of the R$ 2.000,00 rule. Earlier result files keep the old case and were graded with the old criteria; the new cases ran only on the code after the fixes.",
   "cases": [
     {
       "id": "overdue-order-no-promise",
@@ -168,7 +168,28 @@
       ]
     },
     {
-      "id": "long-conversation-shipping",
+      "id": "split-payment-above-threshold",
+      "group": "audit",
+      "turns": [
+        "qnto fica o taylor 110e em 12x?",
+        "e se eu der uma parte no pix e o resto no cartao?"
+      ],
+      "tools": [
+        "quote_payment"
+      ],
+      "include": [
+        "2\\.000",
+        "\\b(pode|da|e possivel|permitid\\w*|aceit\\w*)\\b"
+      ],
+      "exclude": [
+        "nao (e |esta )?(permitido|aceito|possivel)[^.!?\\n]{0,30}(misto|misturar|dividir|combinar)",
+        "(pagamento misto|misturar|dividir|combinar)[^.!?\\n]{0,30}nao (e |esta )?(permitido|aceito|possivel)",
+        "a loja nao (aceita|permite|trabalha com) pagamento misto",
+        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
+      ]
+    },
+    {
+      "id": "long-conversation-ukulele-alone",
       "group": "audit",
       "turns": [
         "oi, to procurando um violão de aço até uns R$ 800",
@@ -180,19 +201,20 @@
         "e em quantas vezes no cartão?",
         "se eu levar ele e o ukulele mais barato junto, quanto dá tudo?",
         "e o frete aqui em campo grande?",
-        "mudei de ideia, troca o ukulele pelo Ohana CK-20",
-        "e agora quanto fica no pix?",
-        "pode ser 6x?",
+        "pensando bem, tira o violão: vou levar só o ukulele. o frete continua grátis?",
         "valeu, qual o endereço mesmo?"
       ],
       "include": [
-        "gratis"
+        "gratis",
+        "35,00"
       ],
       "exclude": [
         "gratis[^.!?\\n]{0,60}(cada (item|um)|separad)",
         "(cada (item|um)|separad)[^.!?\\n]{0,60}gratis",
         "a loja nao (aceita|permite|trabalha com) pagamento misto",
-        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
+        "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b",
+        "(?<!nao )\\b(continua|segue|tambem (fica|sai|e)) gratis",
+        "(?<!nao )(?<!nao e )gratis[^.!?\\n]{0,30}(ukulele sozinho|so o ukulele|so do ukulele)"
       ]
     },
     {
