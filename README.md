@@ -5,7 +5,7 @@ A customer service agent for **Empório da Música**, the fictional instrument s
 **Start here:** this README, then [`examples/`](examples/), then the loop in [`src/in_tune/agent.py`](src/in_tune/agent.py), the prompt in [`prompts.py`](src/in_tune/prompts.py) and the [`tools/`](src/in_tune/tools/). The agent is that loop, seven tools and one prompt; `evals/` and `docs/` are the evidence behind it, not part of it. The agent itself is small. The docs and evals are there because the brief asks how AI assistants were used and how the decisions were made, and because the model choice needed evidence, not preference.
 
 **Assumptions** (full table in [`docs/PLAN.md`](docs/PLAN.md) §4):
-- **Language.** The agent answers in the customer's language, Brazilian Portuguese by default, since the store's customers are in Campo Grande (example 3 ends with an English turn). Docs, code and commits are in English, as the case asks, and each example has a full English translation; the CLI's own messages are in Portuguese.
+- **Language.** The agent answers in English or Spanish when the customer writes in them, and in Brazilian Portuguese otherwise, since the store's customers are in Campo Grande (example 3 ends with an English turn). Docs, code and commits are in English, as the case asks, and each example has a full English translation; the CLI's own messages are in Portuguese.
 - **Stalled orders.** An order counts as stalled after 7 days pending or confirmed without dispatch, and it goes to the team. The manual's own clocks are shorter.
 - **Data deletion.** A deletion request goes to the team. The manual (§9) says a customer may ask, not who carries it out.
 - **Partner stores.** The manual (§7.1) says to suggest them when possible but names none, so the agent names none.
@@ -129,8 +129,8 @@ I read the agent's replies myself:
 - the 12 conversations of the first full transcript;
 - the results of the model-decision runs;
 - every reply in the phase-3 regression and confirmation runs;
-- in issue #12, the replies of 15 regression cases (one run of the fixed code);
-- the five examples, in each version.
+- in issue #12, the replies of 15 regression cases (run 1 of `evals/results/20261101-150747`);
+- the five examples, when first generated and when regenerated in issue #12.
 
 Those readings changed the agent. I caught an invented "they will call you". I also had Claude Code check every statement against the case, and that check found an unverified "e-mail cadastrado" and an offer to take a price-match request to the team.
 
