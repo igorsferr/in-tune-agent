@@ -82,6 +82,15 @@ def test_order_lookups_stop_after_three_failures_in_a_conversation(tmp_path):
     assert fresh.run("check_order", right)[0]["found"]
 
 
+def test_invalid_order_calls_do_not_count_as_failed_lookups(tmp_path):
+    toolbox = Toolbox(Store(), Policies(), clock=lambda: NOW, handoff_log=tmp_path / "h.jsonl")
+    for _ in range(5):  # rejected before the lookup runs, so nothing was tried
+        _, is_error = toolbox.run("check_order", {"order_id": 8})
+        assert is_error
+    assert toolbox.failed_order_lookups == 0
+    assert toolbox.run("check_order", {"order_id": 8, "contact": "(67) 99654-7821"})[0]["found"]
+
+
 def test_store_status_takes_a_date_as_text(toolbox):
     status, is_error = toolbox.run("store_status", {"day": "2026-11-02"})
     assert not is_error
