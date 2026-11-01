@@ -1,6 +1,6 @@
 # Example: 03-endereco-e-devolucao
 
-Model `claude-sonnet-5-5`, effort medium · commit `fd0f498` · src tree `f8476c1` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-10-31 20:25 (Campo Grande)
+Model `claude-sonnet-5-5`, effort medium · commit `d0d064b` · src tree `9eaff08` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-11-01 15:18 (Campo Grande)
 
 **Cliente:** Qual o endereço da loja?
 
@@ -9,66 +9,86 @@ Model `claude-sonnet-5-5`, effort medium · commit `fd0f498` · src tree `f8476c
 
 **Agente:**
 
-Estamos na Rua 14 de Maio, 3200, Centro, Campo Grande - MS, CEP 79202-333.
+A loja fica na Rua 14 de Maio, 3200 – Centro, Campo Grande – MS, CEP 79202-333.
 
-Hoje a loja está aberta das 9h às 18h. Se quiser falar com a gente, o telefone é (67) 3341-4444 e o WhatsApp é (67) 3321-4500.
+Hoje a gente está aberto das 09:00 às 18:00. 🎸
+
+Se quiser falar com a gente, o telefone é (67) 3341-4444 e o WhatsApp é (67) 3321-4500.
 
 Posso ajudar em mais alguma coisa?
 
-<sub>3.8 s · input_tokens 6, output_tokens 203, cache_read_input_tokens 4187, cache_creation_input_tokens 4588 · end_turn</sub>
+<sub>3.1 s · input_tokens 6, output_tokens 213, cache_read_input_tokens 9278, cache_creation_input_tokens 483 · end_turn</sub>
 
 **Cliente:** Me arrependi da minha compra, posso devolver meu pedido?
 
 - `get_policy({"section": "4.1"})`
+- `get_policy({"section": "4.4"})`
 
 **Agente:**
 
-Pode sim, se a compra foi online. As regras são estas:
+Pode sim, se a compra foi online. Estas são as regras:
 
-- Você tem até 7 dias corridos depois de receber o produto, sem precisar justificar.
-- O produto tem que estar na embalagem original, sem sinais de uso e com todos os acessórios e manuais.
-- O reembolso sai na mesma forma de pagamento da compra, em até 10 dias úteis.
-- O frete da devolução fica por conta da loja.
+- O prazo é de até 7 dias corridos depois de você receber o produto. Não precisa de justificativa.
+- O produto tem que estar na embalagem original, sem sinais de uso, com todos os acessórios e manuais.
+- O reembolso volta na mesma forma de pagamento original, em até 10 dias úteis.
+- O frete da devolução é por conta da loja.
 
-Se quiser, consulto seu pedido. Para isso, me passe o número dele e o telefone ou e-mail usado na compra.
+Alguns itens não podem ser trocados:
+- instrumentos personalizados ou com ajuste sob encomenda
+- produtos de liquidação com aviso de "venda final"
+- boquilhas de instrumentos de sopro
 
-<sub>3.4 s · input_tokens 6, output_tokens 243, cache_read_input_tokens 9331, cache_creation_input_tokens 420 · end_turn</sub>
+Para dar andamento, fale com a gente pelo telefone (67) 3341-4444 ou pelo WhatsApp (67) 3321-4500. Se quiser, também posso consultar o status do pedido. Para isso preciso do número do pedido e do telefone ou e-mail usado na compra.
+
+<sub>4.5 s · input_tokens 6, output_tokens 426, cache_read_input_tokens 10327, cache_creation_input_tokens 675 · end_turn</sub>
 
 **Cliente:** vcs vendem corda de violão?
 
 
 **Agente:**
 
-Não, corda de violão a gente não vende. A loja trabalha só com instrumentos musicais, então não temos acessórios como cordas, palhetas, cabos, capas, pedais e amplificadores.
+Corda de violão a gente não vende, porque trabalhamos só com instrumentos musicais. Acessórios como cordas, palhetas, cabos, capas, pedais e amplificadores ficam de fora.
 
-Se estiver procurando um violão, posso ver as opções para você. Quer que eu procure?
+Se quiser, posso mostrar os violões que temos no catálogo. Posso ajudar em mais alguma coisa?
 
-<sub>1.6 s · input_tokens 4, output_tokens 102, cache_read_input_tokens 5008, cache_creation_input_tokens 207 · end_turn</sub>
+<sub>1.9 s · input_tokens 4, output_tokens 114, cache_read_input_tokens 5756, cache_creation_input_tokens 343 · end_turn</sub>
 
 **Cliente:** e qual a capital da Austrália?
 
 
 **Agente:**
 
-Essa fica fora do que eu consigo ajudar por aqui, porque cuido só de assuntos da loja. 😊
+Essa foge do que eu consigo ajudar por aqui, porque eu cuido só de assuntos da loja. 😄 Se precisar de algo sobre instrumentos, pedidos, pagamento ou entrega, é só falar.
 
-Se precisar de algo sobre instrumentos, pedidos, pagamento ou entrega, é só falar. Quer ver alguma opção de violão?
+<sub>1.9 s · input_tokens 4, output_tokens 81, cache_read_input_tokens 6099, cache_creation_input_tokens 128 · end_turn</sub>
 
-<sub>1.7 s · input_tokens 4, output_tokens 95, cache_read_input_tokens 5215, cache_creation_input_tokens 116 · end_turn</sub>
+**Cliente:** Sorry, I don't speak Portuguese. Is the store open now?
+
+- `store_status({})`
+
+**Agente:**
+
+Yes, we're open right now. Today's hours are 09:00 to 18:00 (Campo Grande time).
+
+You can reach us at (67) 3341-4444 by phone or at (67) 3321-4500 on WhatsApp. Is there anything else I can help with?
+
+<sub>2.5 s · input_tokens 6, output_tokens 115, cache_read_input_tokens 12560, cache_creation_input_tokens 187 · end_turn</sub>
 
 ---
 
 ## English translation
 
-*The Portuguese above is the agent's verbatim output. This translation was added afterwards for English readers; it is not output of the agent. Tool calls are the same as above.*
+*The Portuguese above is the agent's verbatim output. This translation was added afterwards for English readers; it is not output of the agent. The last exchange was already in English and is repeated as it is. Tool calls are the same as above.*
 
 **Customer:** What is the store's address?
 
 **Agent:**
 
-We are at Rua 14 de Maio, 3200, Centro, Campo Grande - MS, CEP 79202-333.
+The store is at Rua 14 de Maio, 3200 – Centro, Campo Grande – MS, CEP 79202-333.
 
-Today the store is open from 9:00 to 18:00. If you want to talk to us, the phone is (67) 3341-4444 and the WhatsApp is (67) 3321-4500.
+Today we're open from 09:00 to 18:00. 🎸
+
+If you want to talk to us, the phone is (67) 3341-4444 and the WhatsApp is (67) 3321-4500.
 
 Can I help with anything else?
 
@@ -78,25 +98,36 @@ Can I help with anything else?
 
 Yes, if the purchase was made online. These are the rules:
 
-- You have up to 7 calendar days after receiving the product, and you don't need to give a reason.
-- The product must be in its original packaging, with no signs of use, and with all accessories and manuals.
-- The refund goes to the same payment method you used, within 10 business days.
+- You have up to 7 calendar days after you receive the product. No reason is needed.
+- The product must be in its original packaging, with no signs of use, with all accessories and manuals.
+- The refund goes back to the original payment method within 10 business days.
 - The store pays the return shipping.
 
-If you like, I can look up your order. For that, send me its number and the phone or e-mail used for the purchase.
+Some items cannot be exchanged:
+- custom instruments or ones with made-to-order adjustments
+- clearance products marked "final sale"
+- mouthpieces of wind instruments
+
+To move forward, contact us by phone at (67) 3341-4444 or on WhatsApp at (67) 3321-4500. If you like, I can also check your order's status. For that I need the order number and the phone or e-mail used for the purchase.
 
 **Customer:** do you guys sell acoustic guitar strings?
 
 **Agent:**
 
-No, we don't sell acoustic guitar strings. The store only sells musical instruments, so we don't carry accessories like strings, picks, cables, cases, pedals and amplifiers.
+We don't sell acoustic guitar strings, because we only carry musical instruments. Accessories like strings, picks, cables, cases, pedals and amplifiers are left out.
 
-If you are looking for an acoustic guitar, I can check the options for you. Do you want me to look?
+If you like, I can show you the acoustic guitars in the catalog. Can I help with anything else?
 
 **Customer:** and what is the capital of Australia?
 
 **Agent:**
 
-That one is outside what I can help with here, because I only handle store matters. 😊
+That one is outside what I can help with here, because I only handle store matters. 😄 If you need anything about instruments, orders, payment or delivery, just say so.
 
-If you need anything about instruments, orders, payment or delivery, just say so. Do you want to see some acoustic guitar options?
+**Customer:** Sorry, I don't speak Portuguese. Is the store open now?
+
+**Agent:**
+
+Yes, we're open right now. Today's hours are 09:00 to 18:00 (Campo Grande time).
+
+You can reach us at (67) 3341-4444 by phone or at (67) 3321-4500 on WhatsApp. Is there anything else I can help with?
