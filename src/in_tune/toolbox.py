@@ -115,6 +115,18 @@ INPUTS = {
 }
 
 
+# Failed order lookups allowed per conversation (one Toolbox). It slows guessing
+# order numbers and contacts inside one chat; a new conversation starts at zero.
+MAX_FAILED_ORDER_LOOKUPS = 3
+LOOKUP_LIMIT = {
+    "error": "order lookup limit reached in this conversation",
+    "message": (
+        "Don't try more order numbers or contacts here. Ask the customer to contact the "
+        "store by phone or WhatsApp; the team can check the order."
+    ),
+}
+
+
 class Toolbox:
     def __init__(
         self,
@@ -129,6 +141,7 @@ class Toolbox:
             clock,
             handoff_log,
         )
+        self.failed_order_lookups = 0
 
     def definitions(self) -> list[dict]:
         """Tool definitions for the Messages API, in a fixed order (cache-friendly)."""
@@ -165,7 +178,13 @@ class Toolbox:
             case "get_product":
                 return get_product(s, args.product_id, args.name)
             case "check_order":
-                return check_order(s, args.order_id, args.contact, self.clock().date())
+                # Past the limit the lookup doesn't run, so a right guess reveals nothing.
+                if self.failed_order_lookups >= MAX_FAILED_ORDER_LOOKUPS:
+                    return dict(LOOKUP_LIMIT)
+                result = check_order(s, args.order_id, args.contact, self.clock().date())
+                if not result["found"]:
+                    self.failed_order_lookups += 1
+                return result
             case "quote_payment":
                 return quote_payment(s, args.product_ids)
             case "get_policy":
