@@ -9,7 +9,7 @@ No tool call can crash the conversation.
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -57,7 +57,9 @@ class GetPolicy(_Input):
 
 
 class StoreStatus(_Input):
-    pass
+    day: date | None = Field(
+        None, description="A date to check (YYYY-MM-DD), such as tomorrow; omit for today only."
+    )
 
 
 class HandoffToHuman(_Input):
@@ -84,7 +86,8 @@ DESCRIPTIONS = {
     ),
     "quote_payment": (
         "Totals for each payment method, the allowed credit-card installments, whether mixed "
-        "payment is allowed, and Campo Grande metro shipping, for the given products."
+        "payment is allowed, and Campo Grande metro shipping, for the given products. The "
+        "answers hold for this set of products only; the *_rule fields say what they depend on."
     ),
     "get_policy": (
         "Text of a section of the store's policy manual: hours, contact, payment, returns, "
@@ -92,7 +95,7 @@ DESCRIPTIONS = {
     ),
     "store_status": (
         "Current date and time in Campo Grande, whether the store is open now, and when it "
-        "opens next. Holidays included."
+        "opens next. With 'day', also that day's hours. Holidays included."
     ),
     "handoff_to_human": (
         "Register a handoff to the human team and get a protocol number. Use for complaints, "
@@ -112,6 +115,18 @@ INPUTS = {
 }
 
 
+# Failed order lookups allowed per conversation (one Toolbox). It slows guessing
+# order numbers and contacts inside one chat; a new conversation starts at zero.
+MAX_FAILED_ORDER_LOOKUPS = 3
+LOOKUP_LIMIT = {
+    "error": "order lookup limit reached in this conversation",
+    "message": (
+        "Don't try more order numbers or contacts here. Ask the customer to contact the "
+        "store by phone or WhatsApp; the team can check the order."
+    ),
+}
+
+
 class Toolbox:
     def __init__(
         self,
@@ -126,6 +141,7 @@ class Toolbox:
             clock,
             handoff_log,
         )
+        self.failed_order_lookups = 0
 
     def definitions(self) -> list[dict]:
         """Tool definitions for the Messages API, in a fixed order (cache-friendly)."""
@@ -162,13 +178,19 @@ class Toolbox:
             case "get_product":
                 return get_product(s, args.product_id, args.name)
             case "check_order":
-                return check_order(s, args.order_id, args.contact, self.clock().date())
+                # Past the limit the lookup doesn't run, so a right guess reveals nothing.
+                if self.failed_order_lookups >= MAX_FAILED_ORDER_LOOKUPS:
+                    return dict(LOOKUP_LIMIT)
+                result = check_order(s, args.order_id, args.contact, self.clock().date())
+                if not result["found"]:
+                    self.failed_order_lookups += 1
+                return result
             case "quote_payment":
                 return quote_payment(s, args.product_ids)
             case "get_policy":
                 return self.policies.get(args.section)
             case "store_status":
-                return store_status(self.clock())
+                return store_status(self.clock(), args.day)
             case "handoff_to_human":
                 return handoff_to_human(
                     args.reason, args.summary, args.contact, self.clock(), self.handoff_log

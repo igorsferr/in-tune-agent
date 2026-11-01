@@ -65,3 +65,33 @@ def test_a_crashing_tool_does_not_raise(toolbox, monkeypatch):
 def test_clock_drives_time_dependent_tools(toolbox):
     status, _ = toolbox.run("store_status", {})
     assert status["now"] == "sábado, 31/10/2026, 15:00"
+
+
+def test_order_lookups_stop_after_three_failures_in_a_conversation(tmp_path):
+    toolbox = Toolbox(Store(), Policies(), clock=lambda: NOW, handoff_log=tmp_path / "h.jsonl")
+    right = {"order_id": 8, "contact": "(67) 99654-7821"}
+    assert toolbox.run("check_order", right)[0]["found"]  # a match doesn't count
+    for wrong in ("(67) 90000-0001", "(67) 90000-0002", "(67) 90000-0003"):
+        result, _ = toolbox.run("check_order", {"order_id": 8, "contact": wrong})
+        assert result["found"] is False
+    # The fourth lookup doesn't run, even with the right contact.
+    result, is_error = toolbox.run("check_order", right)
+    assert is_error and "limit" in result["error"] and "found" not in result
+    # A new conversation (a new Toolbox) starts from zero.
+    fresh = Toolbox(Store(), Policies(), clock=lambda: NOW, handoff_log=tmp_path / "h.jsonl")
+    assert fresh.run("check_order", right)[0]["found"]
+
+
+def test_invalid_order_calls_do_not_count_as_failed_lookups(tmp_path):
+    toolbox = Toolbox(Store(), Policies(), clock=lambda: NOW, handoff_log=tmp_path / "h.jsonl")
+    for _ in range(5):  # rejected before the lookup runs, so nothing was tried
+        _, is_error = toolbox.run("check_order", {"order_id": 8})
+        assert is_error
+    assert toolbox.failed_order_lookups == 0
+    assert toolbox.run("check_order", {"order_id": 8, "contact": "(67) 99654-7821"})[0]["found"]
+
+
+def test_store_status_takes_a_date_as_text(toolbox):
+    status, is_error = toolbox.run("store_status", {"day": "2026-11-02"})
+    assert not is_error
+    assert status["day"]["hours"] == "closed (Finados)"

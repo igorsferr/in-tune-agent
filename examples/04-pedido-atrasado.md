@@ -1,6 +1,6 @@
 # Example: 04-pedido-atrasado
 
-Model `claude-sonnet-5-5`, effort medium · commit `79e11fe` · src tree `f8476c1` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-10-31 18:13 (Campo Grande)
+Model `claude-sonnet-5-5`, effort medium · commit `d0d064b` · src tree `9eaff08` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-11-01 15:18 (Campo Grande)
 
 **Cliente:** oi, meu pedido 8 ainda não chegou
 
@@ -8,28 +8,24 @@ Model `claude-sonnet-5-5`, effort medium · commit `79e11fe` · src tree `f8476c
 
 **Agente:**
 
-Oi! Vou olhar isso pra você. Pra consultar o pedido 8, preciso do telefone ou do e-mail que você usou na compra. Pode me passar?
+Oi! Vou dar uma olhada no pedido 8 pra você. Preciso confirmar alguns dados: qual telefone ou e-mail você usou na hora da compra?
 
-<sub>3.0 s · input_tokens 6, output_tokens 86, cache_read_input_tokens 8299, cache_creation_input_tokens 170 · end_turn</sub>
+<sub>2.8 s · input_tokens 6, output_tokens 88, cache_read_input_tokens 9285, cache_creation_input_tokens 170 · end_turn</sub>
 
 **Cliente:** o telefone é (67) 99654-7821
 
 - `check_order({"order_id": 8, "contact": "(67) 99654-7821"})`
-- `handoff_to_human({"reason": "order_problem", "summary": "Pedido 8 (Ana, Kala KA-C Concert Mogno) com status enviado, código BRJL5544332BR, previsão de entrega 28/02/2026 vencida. Cliente informa que não recebeu.", "contact": "(67) 99654-7821"})`
+- `handoff_to_human({"reason": "order_problem", "summary": "Pedido 8 (Ana), Kala KA-C Concert Mogno, status enviado, código BRJL5544332BR. Entrega estimada era 2026-02-28 e ainda não chegou (atrasado).", "contact": "(67) 99654-7821"})`
 
 **Agente:**
 
-Oi, Ana! Achei seu pedido 8 (Kala KA-C Concert Mogno).
+Oi, Ana! Achei seu pedido 8 (Kala KA-C Concert Mogno). O status é enviado, e o código de rastreamento é BRJL5544332BR. A entrega estava prevista para 28/02/2026, então ele está atrasado.
 
-- Status: enviado
-- Código de rastreamento: BRJL5544332BR
-- Previsão de entrega: 28/02/2026
-
-Essa data já passou e o pedido está atrasado. Por isso passei o caso para a nossa equipe. O protocolo é EM-20261103-100000-A18C.
+Passei o caso para a nossa equipe. O protocolo é EM-20261103-100000-00F3.
 
 Posso ajudar em mais alguma coisa?
 
-<sub>5.9 s · input_tokens 8, output_tokens 450, cache_read_input_tokens 13228, cache_creation_input_tokens 573 · end_turn</sub>
+<sub>5.3 s · input_tokens 8, output_tokens 434, cache_read_input_tokens 14711, cache_creation_input_tokens 572 · end_turn</sub>
 
 ---
 
@@ -41,20 +37,14 @@ Posso ajudar em mais alguma coisa?
 
 **Agent:**
 
-Hi! I'll look into it for you. To look up order 8, I need the phone or e-mail you used for the purchase. Could you send it?
+Hi! I'll take a look at order 8 for you. I need to confirm some details: which phone or e-mail did you use for the purchase?
 
 **Customer:** the phone is (67) 99654-7821
 
-*Handoff summary the agent wrote for the team:* "Order 8 (Ana, Kala KA-C Concert Mogno) with status shipped, code BRJL5544332BR, delivery estimate 28/02/2026 overdue. Customer reports not having received it."
-
 **Agent:**
 
-Hi, Ana! I found your order 8 (Kala KA-C Concert Mogno).
+Hi, Ana! I found your order 8 (Kala KA-C Concert Mogno). The status is shipped, and the tracking code is BRJL5544332BR. Delivery was expected on 28/02/2026, so it is late.
 
-- Status: shipped
-- Tracking code: BRJL5544332BR
-- Delivery estimate: 28/02/2026
-
-That date has passed and the order is late. So I have passed your case to our team. The protocol is EM-20261103-100000-A18C.
+I've passed the case to our team. The protocol is EM-20261103-100000-00F3.
 
 Can I help with anything else?

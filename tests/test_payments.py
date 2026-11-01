@@ -56,6 +56,30 @@ def test_cheap_item_has_few_installments_and_pays_metro_shipping(store):
     assert quote["mixed_payment_allowed"] is False
 
 
+@pytest.mark.parametrize(
+    ("price", "mixed", "shipping"),
+    [
+        ("2000.00", False, "free"),  # §3.1 says "acima de R$ 2.000": exactly 2.000 is not above
+        ("2000.01", True, "free"),
+        ("500.00", False, "free"),  # §5.1, read in the customer's favour at exactly 500
+        ("499.99", False, "R$ 35,00"),
+    ],
+)
+def test_mixed_payment_and_free_shipping_boundaries(store, monkeypatch, price, mixed, shipping):
+    # No catalog item costs exactly these amounts, so the price is fixed here.
+    monkeypatch.setattr("in_tune.tools.payments.final_price", lambda *_: Decimal(price))
+    quote = quote_payment(store, [119])
+    assert quote["mixed_payment_allowed"] is mixed
+    assert quote["shipping_campo_grande_metro"] == shipping
+
+
+def test_a_no_comes_with_the_rule_behind_it(store):
+    # A "no" for one cheap item must not read as "the store never allows it".
+    quote = quote_payment(store, [119])
+    assert "above R$ 2.000,00" in quote["mixed_payment_rule"]
+    assert "R$ 500,00 or more" in quote["shipping_rule"]
+
+
 def test_repeated_id_counts_as_quantity(store):
     assert quote_payment(store, [119, 119])["total"] == "R$ 319,80"
 

@@ -27,11 +27,14 @@ def tool_use(id_, name, input_):
     return SimpleNamespace(type="tool_use", id=id_, name=name, input=input_)
 
 
-def response(*content, stop_reason="end_turn"):
+def response(*content, stop_reason="end_turn", model=None):
     usage = SimpleNamespace(
         input_tokens=10, output_tokens=5, cache_read_input_tokens=3, cache_creation_input_tokens=1
     )
-    return SimpleNamespace(content=list(content), stop_reason=stop_reason, usage=usage)
+    fake = SimpleNamespace(content=list(content), stop_reason=stop_reason, usage=usage)
+    if model:  # the real API always sets it; leaving it out tests the "unknown" case
+        fake.model = model
+    return fake
 
 
 class FakeClient:
@@ -248,6 +251,22 @@ def test_fallback_only_where_supported(parts, model, has_fallback):
     agent.send("oi")
     assert ("fallbacks" in client.requests[0]) is has_fallback
     assert ("betas" in client.requests[0]) is has_fallback
+
+
+def test_reply_records_each_model_the_api_reported(parts):
+    agent, _ = make_agent(
+        parts,
+        response(
+            tool_use("t1", "store_status", {}), stop_reason="tool_use", model="claude-sonnet-5-5"
+        ),
+        response(text("ok"), model="claude-opus-5-5"),  # e.g. a fallback served this step
+    )
+    assert agent.send("?").models == ["claude-sonnet-5-5", "claude-opus-5-5"]
+
+
+def test_reply_has_no_model_when_the_api_reports_none(parts):
+    agent, _ = make_agent(parts, response(text("ok")))
+    assert agent.send("oi").models == []
 
 
 def test_usage_is_summed_over_steps_including_cache_writes(parts):

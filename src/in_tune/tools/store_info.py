@@ -34,7 +34,15 @@ def _label(day: date) -> str:
     return f"{WEEKDAYS[day.weekday()]}, {day.strftime('%d/%m/%Y')}"
 
 
-def store_status(now: datetime | None = None) -> dict:
+def _hours_text(day: date) -> str:
+    hours = _hours(day)
+    if hours:
+        return f"{hours[0]:%H:%M}–{hours[1]:%H:%M}"
+    return f"closed ({HOLIDAYS.get(day, 'domingo')})"
+
+
+def store_status(now: datetime | None = None, day: date | None = None) -> dict:
+    """Now, open or not, and next opening; with `day`, also that day's hours."""
     now = now or datetime.now(TZ)
     # A time without a timezone is read as Campo Grande time, never the machine's.
     now = now.replace(tzinfo=TZ) if now.tzinfo is None else now.astimezone(TZ)
@@ -44,17 +52,20 @@ def store_status(now: datetime | None = None) -> dict:
 
     next_opening = None
     for offset in range(0, 15):
-        day = today + timedelta(days=offset)
-        day_hours = _hours(day)
+        candidate = today + timedelta(days=offset)
+        day_hours = _hours(candidate)
         if day_hours and (offset > 0 or now.time() < day_hours[0]):
-            next_opening = f"{_label(day)}, {day_hours[0]:%H:%M}"
+            next_opening = f"{_label(candidate)}, {day_hours[0]:%H:%M}"
             break
 
-    return {
+    status = {
         "now": f"{_label(today)}, {now:%H:%M}",
         "open_now": is_open,
-        "today": f"{hours[0]:%H:%M}–{hours[1]:%H:%M}"
-        if hours
-        else f"closed ({HOLIDAYS.get(today, 'domingo')})",
+        "today": _hours_text(today),
         "next_opening": None if is_open else next_opening,
     }
+    if day is not None:
+        status["day"] = {"date": _label(day), "hours": _hours_text(day)}
+        if day > max(HOLIDAYS):
+            status["day"]["note"] = "holidays after this list's last date are not known"
+    return status

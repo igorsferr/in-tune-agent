@@ -48,6 +48,9 @@ class Reply:
     tool_calls: list[ToolCall]
     stop_reason: str
     usage: dict[str, int] = field(default_factory=dict)
+    # Models the API reported for this turn's responses (more than one if a
+    # fallback served a step); empty when the responses didn't say.
+    models: list[str] = field(default_factory=list)
 
 
 class Agent:
@@ -101,15 +104,19 @@ class Agent:
         self.messages.append({"role": "user", "content": text})
         calls: list[ToolCall] = []
         usage: dict[str, int] = {}
+        models: list[str] = []
         try:
             for _ in range(self.max_steps):
                 response = self._request()
                 for key in USAGE_KEYS:
                     usage[key] = usage.get(key, 0) + (getattr(response.usage, key, 0) or 0)
+                served = getattr(response, "model", None)
+                if served and served not in models:
+                    models.append(served)
 
                 if response.stop_reason == "refusal" or not response.content:
                     # A refused turn's content (and any tool call in it) is discarded.
-                    return self._close(calls, response.stop_reason or "empty", usage)
+                    return self._close(calls, response.stop_reason or "empty", usage, models)
 
                 self.messages.append({"role": "assistant", "content": response.content})
                 tool_uses = [b for b in response.content if b.type == "tool_use"]
@@ -118,13 +125,13 @@ class Agent:
                     continue
                 if tool_uses:  # stopped mid-call (e.g. max_tokens): those calls never ran
                     self.messages.append({"role": "user", "content": _not_run(tool_uses)})
-                    return self._close(calls, response.stop_reason, usage)
+                    return self._close(calls, response.stop_reason, usage, models)
 
                 reply = "\n".join(b.text for b in response.content if b.type == "text").strip()
                 if not reply:
-                    return self._close(calls, response.stop_reason, usage)
-                return Reply(reply, calls, response.stop_reason, usage)
-            return self._close(calls, "max_steps", usage)
+                    return self._close(calls, response.stop_reason, usage, models)
+                return Reply(reply, calls, response.stop_reason, usage, models)
+            return self._close(calls, "max_steps", usage, models)
         except BaseException:
             self._recover()
             raise
@@ -146,10 +153,12 @@ class Agent:
             )
         return results
 
-    def _close(self, calls: list[ToolCall], reason: str, usage: dict[str, int]) -> Reply:
+    def _close(
+        self, calls: list[ToolCall], reason: str, usage: dict[str, int], models: list[str]
+    ) -> Reply:
         """End the turn with the fixed apology, recorded in the history too."""
         self.messages.append({"role": "assistant", "content": SORRY})
-        return Reply(SORRY, calls, reason, usage)
+        return Reply(SORRY, calls, reason, usage, models)
 
     def _recover(self) -> None:
         """After an exception mid-turn, put the history back in a valid state."""

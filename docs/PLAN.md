@@ -97,7 +97,7 @@ in-tune-agent/
 
 ## 7. Phases (one issue and one PR each)
 
-*This schedule is the plan as written before any code. As built, every phase's commits are dated 2026-10-31, and phase 4 had a second PR (#11) after a final audit; the times are in [`PROCESS_LOG.md`](PROCESS_LOG.md).*
+*This schedule is the plan as written before any code. As built, every phase's commits are dated 2026-10-31, and phase 4 had a second PR (#11) after a final audit; the times are in [`PROCESS_LOG.md`](PROCESS_LOG.md). On 2026-11-01, issue #12 (PR #14) reopened the prompt and tools once more, to fix what the audit found.*
 
 **Target: submit on 2026-11-01 (Sunday) by 22:00.** That leaves about two days of slack before the earliest plausible deadline. Monday is reserved for emergencies only, with an internal hard limit of **2026-11-02 12:00**, still 1.5 days early.
 
@@ -115,7 +115,7 @@ The plan is not to finish "as fast as possible". Phases are not merged before th
 
 **Review gate.** Before each merge, an independent reviewer looks at the PR diff with a fresh context and without the author's reasoning. The reviewer is a separate Claude session, read-only. It checks correctness, consistency with the brief and the data, commit hygiene and over-engineering. Findings are fixed as normal commits before the merge, and recurring lessons carry over to the next phase.
 
-**Freeze gate (set by Igor after the phase-3 confirmation).** From the commit that confirmed the decision cases on the delivered code (`evals/results/20261031-175528-*`), the prompt and the tools are frozen until submission. The phase-4 example conversations are generated from that commit, and each file records its hash. If an example shows a problem that needs a prompt or tool change, the change goes in only together with a fresh regression run and a fresh confirmation run, never as a standalone tweak.
+**Freeze gate (set by Igor after the phase-3 confirmation).** From the commit that confirmed the decision cases on the delivered code (`evals/results/20261031-175528-*`), the prompt and the tools are frozen until submission. The phase-4 example conversations are generated from that commit, and each file records its hash. If an example shows a problem that needs a prompt or tool change, the change goes in only together with a fresh regression run and a fresh confirmation run, never as a standalone tweak. Igor lifted the freeze once, for issue #12, under that same condition.
 
 ## 8. Decision log
 
@@ -150,7 +150,7 @@ The sample is small: 27 cases × 2 runs, so near the 90% bar the gap between pas
 
 - The repository is the deliverable. The case's own instructions decide, never preference, and the two sources name different channels. So we use both: a reply to the e-mail with the repository link (brief, "Como Entregar"), and a PDF in English with the link submitted through the form (recruiter's e-mail).
 - **Deadline:** no plausible reading of the e-mail lands before 2026-11-03 23:59. That reading counts the 2026-11-02 holiday as a business day; excluding the holiday gives 11-04. We plan as if the deadline were 2026-11-02 12:00 and aim to submit on 2026-11-01 at 22:00. The repository is not changed after submission.
-- Docs, commits and PRs are in English. The agent speaks Brazilian Portuguese.
+- Docs, commits and PRs are in English. The agent answers in the customer's language, Brazilian Portuguese by default (issue #12; until then it answered only in Portuguese).
 - The data is a fixed snapshot. The agent reads it and never writes orders or stock.
 
 ## 10. With more time (kept out on purpose)

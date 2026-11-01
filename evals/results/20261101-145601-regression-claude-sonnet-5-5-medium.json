@@ -1,0 +1,247 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "commit": "a97e03decceb0c4f233064ac0fb74d0a2b44b61a",
+ "dirty": false,
+ "cases_file": "evals/regression.json",
+ "cases_sha256": "7c550c47b26eb241310a3fb041ddc4f3b1151feeb9d2491d9bea91b13e46e247",
+ "anthropic_sdk": "2.3.0",
+ "runs": [
+  [
+   {
+    "id": "holiday-tomorrow-closed",
+    "group": "audit",
+    "critical": false,
+    "now": "2026-11-19T15:00:00-04:00",
+    "passed": false,
+    "failures": [
+     "missing: /fechad|nao (abrimos|abre|abriremos|vamos abrir|funciona|funcionamos)/",
+     "forbidden: /(^|[.!?]\\s+)(abrimos|a gente abre|a loja abre|funcionamos)\\s+(das\\s+)?0?9(:00|h)[^.!?\\n]{0,15}18/"
+    ],
+    "seconds": [
+     3.4990183999998408
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 194,
+     "cache_read_input_tokens": 4187,
+     "cache_creation_input_tokens": 4621
+    },
+    "cost_usd": "0.0143419",
+    "turns": [
+     {
+      "customer": "vcs abrem amanhã?",
+      "reply": "Hoje é quinta (19/11), então amanhã é sexta-feira. A gente abre das 09:00 às 18:00. 🎶\n\nNão tenho como confirmar se amanhã tem alguma alteração de horário por feriado ou data especial. Em geral, seguimos o horário normal de sexta.\n\nPosso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "quinta, 19/11/2026, 15:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "2"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "2",
+           "title": "Horário de Funcionamento",
+           "text": "O atendimento presencial na loja segue os horários abaixo. O atendimento via WhatsApp segue o\nmesmo horário, com respostas automáticas fora do expediente.\n\nDia | Horário\n\nSegunda a Sexta-feira | 09:00 às 18:00\n\nSábado | 09:00 às 13:00\n\nDomingo e Feriados | Fechado\n\nEm datas especiais (Black Friday, Aniversário da Loja, Natal), o horário pode ser estendido.\nAlterações serão comunicadas com antecedência nas redes sociais e no atendimento via WhatsApp."
+          }
+         ]
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "holiday-next-monday-closed",
+    "group": "audit",
+    "critical": false,
+    "now": "2026-10-31T10:00:00-04:00",
+    "passed": false,
+    "failures": [
+     "forbidden: /(abrimos|abre|abriremos|abririamos|estamos abertos|estaremos abertos|funcionamos|funciona) (sim|normalmente)/",
+     "forbidden: /segunda[^.!?\\n]{0,40}\\b0?9(:00|h)[^.!?\\n]{0,15}18/"
+    ],
+    "seconds": [
+     4.13811910000004
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 227,
+     "cache_read_input_tokens": 4191,
+     "cache_creation_input_tokens": 4625
+    },
+    "cost_usd": "0.0146827",
+    "turns": [
+     {
+      "customer": "Vocês abrem na segunda-feira?",
+      "reply": "Abrimos sim! Na segunda-feira o horário é das 09:00 às 18:00.\n\nSó um aviso: segunda, 02/11, pode ser feriado e, em feriados, a loja fica fechada. Não consigo confirmar isso por aqui. Se quiser ter certeza, é só ligar no (67) 3341-4444.\n\nHoje (sábado) estamos abertos até 13:00. Posso ajudar com mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "sábado, 31/10/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–13:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "2"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "2",
+           "title": "Horário de Funcionamento",
+           "text": "O atendimento presencial na loja segue os horários abaixo. O atendimento via WhatsApp segue o\nmesmo horário, com respostas automáticas fora do expediente.\n\nDia | Horário\n\nSegunda a Sexta-feira | 09:00 às 18:00\n\nSábado | 09:00 às 13:00\n\nDomingo e Feriados | Fechado\n\nEm datas especiais (Black Friday, Aniversário da Loja, Natal), o horário pode ser estendido.\nAlterações serão comunicadas com antecedência nas redes sociais e no atendimento via WhatsApp."
+          }
+         ]
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   {
+    "id": "holiday-tomorrow-closed",
+    "group": "audit",
+    "critical": false,
+    "now": "2026-11-19T15:00:00-04:00",
+    "passed": false,
+    "failures": [
+     "missing: /fechad|nao (abrimos|abre|abriremos|vamos abrir|funciona|funcionamos)/",
+     "forbidden: /(amanha|sexta)[^.!?\\n]{0,40}\\b0?9(:00|h)[^.!?\\n]{0,15}18/"
+    ],
+    "seconds": [
+     2.907261099999232
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 187,
+     "cache_read_input_tokens": 8808,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0036436",
+    "turns": [
+     {
+      "customer": "vcs abrem amanhã?",
+      "reply": "Hoje é quinta (19/11), então amanhã é sexta-feira. Pelo horário da loja, sexta a gente abre das 09:00 às 18:00. 🎶\n\nNão tenho como confirmar se amanhã é feriado ou data especial, mas o horário normal é esse. Posso ajudar em mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "quinta, 19/11/2026, 15:00",
+         "open_now": true,
+         "today": "09:00–18:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "2"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "2",
+           "title": "Horário de Funcionamento",
+           "text": "O atendimento presencial na loja segue os horários abaixo. O atendimento via WhatsApp segue o\nmesmo horário, com respostas automáticas fora do expediente.\n\nDia | Horário\n\nSegunda a Sexta-feira | 09:00 às 18:00\n\nSábado | 09:00 às 13:00\n\nDomingo e Feriados | Fechado\n\nEm datas especiais (Black Friday, Aniversário da Loja, Natal), o horário pode ser estendido.\nAlterações serão comunicadas com antecedência nas redes sociais e no atendimento via WhatsApp."
+          }
+         ]
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "holiday-next-monday-closed",
+    "group": "audit",
+    "critical": false,
+    "now": "2026-10-31T10:00:00-04:00",
+    "passed": false,
+    "failures": [
+     "forbidden: /(abrimos|abre|abriremos|abririamos|estamos abertos|estaremos abertos|funcionamos|funciona) (sim|normalmente)/",
+     "forbidden: /segunda[^.!?\\n]{0,40}\\b0?9(:00|h)[^.!?\\n]{0,15}18/"
+    ],
+    "seconds": [
+     3.3068629000008514
+    ],
+    "usage": {
+     "input_tokens": 6,
+     "output_tokens": 184,
+     "cache_read_input_tokens": 8816,
+     "cache_creation_input_tokens": 0
+    },
+    "cost_usd": "0.0036152",
+    "turns": [
+     {
+      "customer": "Vocês abrem na segunda-feira?",
+      "reply": "Abrimos sim! Na segunda-feira a loja funciona das 09:00 às 18:00.\n\nHoje (sábado) estamos abertos até as 13:00. Se a segunda for feriado, a loja fica fechada, mas não tenho essa informação de datas especiais. Posso ajudar com mais alguma coisa?",
+      "stop_reason": "end_turn",
+      "tool_calls": [
+       {
+        "name": "store_status",
+        "input": {},
+        "result": {
+         "now": "sábado, 31/10/2026, 10:00",
+         "open_now": true,
+         "today": "09:00–13:00",
+         "next_opening": null
+        },
+        "is_error": false
+       },
+       {
+        "name": "get_policy",
+        "input": {
+         "section": "2"
+        },
+        "result": {
+         "found": true,
+         "sections": [
+          {
+           "section": "2",
+           "title": "Horário de Funcionamento",
+           "text": "O atendimento presencial na loja segue os horários abaixo. O atendimento via WhatsApp segue o\nmesmo horário, com respostas automáticas fora do expediente.\n\nDia | Horário\n\nSegunda a Sexta-feira | 09:00 às 18:00\n\nSábado | 09:00 às 13:00\n\nDomingo e Feriados | Fechado\n\nEm datas especiais (Black Friday, Aniversário da Loja, Natal), o horário pode ser estendido.\nAlterações serão comunicadas com antecedência nas redes sociais e no atendimento via WhatsApp."
+          }
+         ]
+        },
+        "is_error": false
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ ]
+}
