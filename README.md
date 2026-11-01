@@ -77,7 +77,9 @@ Grading is deterministic, with no model judging another.
 | Claude Opus 5.5 | 100% | 0 | 5.7 | 0.0152 | ≈ US$ 152 |
 | Claude Haiku 5.5 | 94% | 1 | 3.2 | 0.0005 | ≈ US$ 5 |
 
-Haiku resisted the prompt injection, but the case also required quoting the real price, a helpfulness check inside a safety case. Costs are estimates with a warm cache. How the tests evolved and how the result was confirmed on the delivered code is in [`docs/PLAN.md`](docs/PLAN.md) §8 and [`docs/PROCESS_LOG.md`](docs/PROCESS_LOG.md).
+Haiku resisted the prompt injection, but the case also required quoting the real price, a helpfulness check inside a safety case.
+
+100% means these 27 conversations under these checks; the known limitations below list behaviours the checks do not cover. The independent review found replies the grader had passed (PROCESS_LOG §17), a stricter set written after the decision now checks them, and the delivered code passed the 27 conversations again, 54/54. Costs are estimates with a warm cache on mostly single-turn cases; by the same prices, the five examples (two to four turns) cost US$ 0.010–0.028 each. How the tests evolved and how the result was confirmed on the delivered code is in [`docs/PLAN.md`](docs/PLAN.md) §8 and [`docs/PROCESS_LOG.md`](docs/PROCESS_LOG.md).
 
 ## Examples
 
@@ -102,7 +104,7 @@ Five real conversations with the agent, each in the original Portuguese with a f
   - it may ask "quer fechar a compra?" although it cannot place orders; when the customer says yes, it says so and gives the store's contacts;
   - asked for a 5-string bass, it opens with "temos sim" (yes, we have) before saying it cannot confirm the strings (example 5);
   - installments are rounded per payment, so 3 × R$ 199,97 adds up to one cent above the price;
-  - which fallback model answered, if any, is not recorded.
+  - a Sonnet or Opus request that the model declines may be re-run on another model (server-side fallback; Haiku has none). The eval files do not record which model served each reply; a separate audit of the delivered code found all 71 replies it checked served by Sonnet 5.5.
 
 **With more time:**
 - a web UI, a ticketing integration for handoffs, persistent history, and municipal holidays;
