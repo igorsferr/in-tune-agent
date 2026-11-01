@@ -2,6 +2,8 @@
 
 A customer service agent for **Empório da Música**, the fictional instrument store in Artefact's AI Engineer case, solved the simple way. It is a hand-written tool-use loop around Claude, seven small deterministic Python tools over the store's CSVs and manual, and one system prompt. The agent answers questions about products, prices, payment, orders, shipping and store rules. It takes prices, stock, order status and store rules from tools, and hands problems to the team instead of improvising.
 
+**Start here:** this README, then [`examples/`](examples/), then the loop in [`src/in_tune/agent.py`](src/in_tune/agent.py), the prompt in [`prompts.py`](src/in_tune/prompts.py) and the [`tools/`](src/in_tune/tools/). The agent is that loop, seven tools and one prompt; `evals/` and `docs/` are the evidence behind it, not part of it.
+
 **Assumptions** (full table in [`docs/PLAN.md`](docs/PLAN.md) §4):
 - **Language.** The store's customers write in Portuguese, so the agent answers in Brazilian Portuguese. Everything else in this delivery is in English, as the case asks, including a full English translation of each example conversation.
 - **Stalled orders.** An order counts as stalled after 7 days pending or confirmed without dispatch, and it goes to the team. The manual's own clocks are shorter.
@@ -38,7 +40,13 @@ customer ─▶ CLI ─▶ tool-use loop (Claude) ─▶ 7 Python tools ─▶ C
 - **Search.**
   - The catalog is searched by keyword over the CSVs, with tolerance for typos and hyphens ("takamini gd20", "GD-20"). Model codes are never auto-corrected; the tool asks instead.
   - The 8-page manual is split into its 28 numbered sections, and the agent fetches the one it needs.
+  - The whole manual (about 3–4k tokens) in the cached prompt would also work at this size. A section tool was chosen because the brief evaluates knowing *when* to consult policy, and a tool call makes that visible and testable.
   - A vector database or a SQL agent would add moving parts this data does not need.
+- **Data handling** (details in [`docs/DATA_AUDIT.md`](docs/DATA_AUDIT.md) and [`docs/PLAN.md`](docs/PLAN.md) §4):
+  - the policy PDF was converted once to `data/policies.md` by `scripts/extract_policy.py`, text kept verbatim;
+  - the CSVs are read as provided, with no silent fixes. A product is for sale only when it is active and in stock;
+  - when a product's name, description and specs contradict each other, the tool flags the attribute and the agent does not confirm it;
+  - an order's stored total is reported as is, never recomputed from its items.
 - **Prompt strategy.** The system prompt holds rules, not facts:
   - a price, stock level, deadline or order status must come from a tool in that turn;
   - it sets the store's tone (manual §7.1);
