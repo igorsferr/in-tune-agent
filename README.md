@@ -24,7 +24,7 @@ uv run python evals/run_evals.py --models claude-sonnet-5-5 --repeat 2   # the e
 
 Options: `--model` (default `claude-sonnet-5-5`), `--effort low|medium|high`, and `--now 2026-11-03T10:00` to fix the store clock.
 - **Without a key:** read [`examples/`](examples/); `uv run pytest` needs none.
-- Sonnet and Opus requests use Anthropic's server-side fallback beta (`server-side-fallback-2026-07-01`). If a key rejects it with a 400, `--model claude-haiku-5-5` runs without it.
+- Sonnet and Opus requests use Anthropic's server-side fallback beta (`server-side-fallback-2026-07-01`). If a key rejects it with a 400, `--model claude-haiku-5-5` runs without it (the cheaper model, 94% in the table below).
 - A key the API rejects also prints "Nenhuma credencial da Anthropic encontrada", so check its value too.
 
 ## How it works
@@ -60,7 +60,7 @@ customer ─▶ CLI ─▶ tool-use loop (Claude) ─▶ 7 Python tools ─▶ C
   
   The prompt is the same in every conversation, so it is cached.
 - **Interface: a CLI.** The case's focus is the agent working, and a terminal chat is the least code that shows it.
-- **Provider: Anthropic, with a paid key.** Google's pricing pages (checked 2026-10-31) say Gemini's free tier uses submitted content to improve Google's products and the paid tier does not. That makes a free tier a poor fit for customer data under LGPD. A full test run costs cents.
+- **Provider: Anthropic, with a paid key.** Google's pricing pages (checked 2026-10-31) say Gemini's free tier uses submitted content to improve Google's products and the paid tier does not. That makes a free tier a poor fit for customer data under LGPD; data governance and eval reliability mattered more than saving a few dollars, and a full test run costs cents.
 - **Conversation history: in memory, for the session only.** A CLI run is one customer conversation, and saving it would keep personal data for no benefit to the case.
 
 ## Model choice: how we know it works
@@ -86,7 +86,7 @@ Haiku resisted the prompt injection, but the case also required quoting the real
 
 Five real conversations with the agent, each in the original Portuguese with a full English translation. The store clock is fixed at Tuesday 2026-11-03 10:00 (`--now`), so "today" in the replies is that day:
 
-1. [Guitars up to R$ 1.000, then installments and PIX](examples/01-violoes-ate-1000.md)
+1. [Acoustic guitars up to R$ 1.000, then installments and PIX](examples/01-violoes-ate-1000.md)
 2. [A misspelled model, then 12x](examples/02-takamine-gd20.md)
 3. [Address, the right to return, then strings and an off-topic question](examples/03-endereco-e-devolucao.md)
 4. [An overdue order: identity check, then handoff](examples/04-pedido-atrasado.md)

@@ -97,7 +97,7 @@ in-tune-agent/
 
 ## 7. Phases (one issue and one PR each)
 
-*This schedule is the plan as written before any code. As built, every phase was done on 2026-10-31, and phase 4 had a second PR (#11) after a final audit; the times are in [`PROCESS_LOG.md`](PROCESS_LOG.md).*
+*This schedule is the plan as written before any code. As built, every phase's commits are dated 2026-10-31, and phase 4 had a second PR (#11) after a final audit; the times are in [`PROCESS_LOG.md`](PROCESS_LOG.md).*
 
 **Target: submit on 2026-11-01 (Sunday) by 22:00.** That leaves about two days of slack before the earliest plausible deadline. Monday is reserved for emergencies only, with an internal hard limit of **2026-11-02 12:00**, still 1.5 days early.
 
@@ -128,7 +128,7 @@ Decisions are recorded here as they are made, each with its reason. The README s
 | Conflicting data | Structured fields win; conflicts flagged, never confirmed | Avoids stating what the store cannot guarantee |
 | Prompt strategy | A stable system prompt holding the persona, the rules of §2 and §4 as short directives, and when to use each tool. No facts in the prompt: every fact comes from a tool. Refined in phase 2 against the evals. | Keeps answers grounded and the prompt cacheable |
 | Conversation history | Kept in memory for the session only, no persistence | A CLI run is one customer conversation; persisting it would retain personal data with no benefit for the case |
-| Provider | Anthropic, paid key | Google's pricing pages (checked 2026-10-31) say Gemini's free tier uses submitted content to improve Google's products and the paid tier does not: a poor fit for customer data under LGPD. A Haiku-class model costs cents per eval run |
+| Provider | Anthropic, paid key | Google's pricing pages (checked 2026-10-31) say Gemini's free tier uses submitted content to improve Google's products and the paid tier does not: a poor fit for customer data under LGPD. Data governance and eval reliability matter more than a few dollars; a Haiku-class model costs cents per eval run |
 | Model | **Claude Sonnet 5.5**, effort `medium` | Under the rule below, on the third run (`evals/results/20261031-1650-summary.md`): Sonnet and Opus 5.5 both passed 27/27 twice; Sonnet costs ~US$ 0.0069 per conversation against ~US$ 0.0152 and answers faster (median 3.7 s against 5.7 s). Sonnet passed every case in all three runs as graded; the PR #9 review found it had promised contact in run 1 and offered empty categories in run 3, which the stricter post-decision set (`evals/regression.json`) now catches, and which do not change the choice. Haiku 5.5 (~US$ 0.0005) was disqualified by the critical injection case: it *resisted* the attack, but the case also required quoting the real price, which is a helpfulness criterion inside a safety case. The case was kept as written because it was fixed before any run. |
 | Interface | CLI | The brief's focus is the agent working |
 | Customer verification | Order id + phone or e-mail | Minimum check that keeps order data private (one e-mail is shared by two customers) |
