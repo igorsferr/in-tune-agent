@@ -65,10 +65,10 @@ Igor decided not to work against the deadline at all. The target is to submit on
 
 ### 8. Phase 0 (16:03–16:06)
 - **Repository created** as `igorsferr/in-tune-agent`. Only merge commits are allowed, so every PR keeps its individual commits.
-- **Commit e-mail.** Commits use the GitHub `noreply` address instead of a personal e-mail. In a public repository every commit's e-mail is visible, and the `noreply` address still links each commit to the profile.
+- **Commit e-mail.** Commits use the GitHub `noreply` address instead of a personal e-mail. In a public repository every commit's e-mail is visible, and the `noreply` address still links each commit to the profile. *Correction (§21): this held for the commits made locally. The five merges made on GitHub's website (#6–#10) carry the account's main e-mail, until Igor turned on GitHub's e-mail privacy setting before PR #11 was merged. The history is not rewritten.*
 - **Secrets.** `.gitignore` excludes `.env` from the first commit. The API key lives only in a user environment variable, entered through a hidden prompt so it never appears on screen, in shell history or in the conversation. It was then validated against the models endpoint, which consumes no credit.
 - **Issues.** One issue per phase (#1–#5) was created from `PLAN.md` §7.
-- **Batch commits.** The three docs had been drafted during planning, before the repository existed, so they landed in a few minutes. From phase 1 on, commits land as the work happens.
+- **Batch commits.** The three docs had been drafted during planning, before the repository existed, so they landed in a few minutes. From phase 1 on, commits land as the work happens. When a reviewed group of fixes was ready, the agent committed it one change at a time, so a few commits share the same second.
 
 ### 9. First independent review (PR #6)
 The reviewer session read the brief, the data and the diff. Verdict: merge after fixes, with no blockers and 12 should-fix items, all in documentation. Among them:
@@ -219,7 +219,7 @@ Both became exclusions in the regression set (`e269a10`; re-grading the saved ru
   - a spelling note can still describe a corrected search that found nothing ("ukelele baratinho");
   - the price-quote regression case forbids any mention of "equipe", which is broader than needed.
   
-  The last two touch a frozen tool and the eval set, so they are listed as known limitations rather than changed.
+  The last two touch a frozen tool and the eval set, so they are recorded here rather than changed.
 
 ## Phase 4: docs, examples and submission
 
@@ -252,4 +252,20 @@ Both became exclusions in the regression set (`e269a10`; re-grading the saved ru
   - the example headers label the run time as Campo Grande time;
   - the e-mail draft is cleaned up.
 - **Before the merge**, a clean clone of the public branch was tested in a temporary folder outside the project: install, tests and one question to the CLI. The API key was passed only as an environment variable, never written to a file.
-- **Hand-over.** Nothing changes in the repository after PR #10 is merged. Igor submits the PDF through the form first, then replies to the e-mail with the repository link.
+- **Hand-over, as planned then.** Nothing would change in the repository after PR #10 was merged. Igor reopened it for one more PR before submitting; §21 records why.
+
+### 21. Final reviews and PR #11 (commits from 21:24)
+- **A review from Codex**, brought by Igor, on the merged `d49e8f8`. Two points were accepted: say under the model table what the 100% covers, and state the provider choice as facts (Google's own terms for Gemini's tiers, §5) instead of a legal conclusion. Splitting the prompt-injection case into safety and helpfulness was not done: rule 5 allows changing a case after results only to stop rejecting a correct answer. It stays under "With more time".
+- **Two more read-only reviews, which Igor ran in separate sessions** on `d49e8f8`:
+  - a 28-persona read of the repository, with a tool Igor built with AI agents. It does not run the agent;
+  - a Claude Code audit, in separate clones, that ran 275 simulated customer conversations (realistic and difficult customers, the data's traps, red team) plus static security, code and conformity checks. Each medium or high finding was re-checked by sceptic agents. It found no wrong price, installment or order data, no leak and no injection that worked.
+- **Igor asked the agent to assess a combined plan** against the brief and the e-mail, checking each claim in the repository before agreeing. Igor decided the final list. The agent's check changed four points of the plan:
+  - the server-side fallback beta is listed by Anthropic's docs as a Claude API beta, with no access restriction stated, so `src/` stays frozen and the README gets one line;
+  - the data-handling paragraph does not say that structured fields win: the code flags a conflicting attribute and the agent does not confirm it;
+  - the metro-area cities are a limitation, not an assumption, since nothing handles them;
+  - handoffs also cover the doubts the manual sends to management (§10), so the PDF lists four reasons, not three.
+- **Example 3** gained an accessory and an off-topic turn, since the brief asks for out-of-scope handling and no example showed it. Only the script changed (`fd0f498`); the file was generated once on a clean tree, with the confirmed `src/` and `data/` trees, and kept as it came. Igor read it before the commit.
+- **Docs.** The README gained a "Start here" line, a data-handling bullet, run notes for evaluators without a key, what the 100% covers, the exact language behaviour and the audit's findings grouped under Known limitations; example 5 says why it was kept. The PLAN marks its schedule and sizes as planned. The PDF outside the repository was corrected to match.
+- **Left out on purpose:** any prompt or tool change (the audit's tool fixes, such as a date for `store_status` or colour names in search, would reopen the freeze), replacing example 5, asking the recruiter about the deadline, more evals, and a `submitted` tag.
+- **E-mail on merges.** Igor turned on GitHub's e-mail privacy setting before this PR's merge, so the merge should carry the `noreply` address (§8).
+- **Hand-over.** Nothing changes in the repository after PR #11 is merged. Igor submits the PDF through the form first, then replies to the e-mail with the repository link.
