@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -23,6 +23,27 @@ def test_saturday_closes_at_13_and_skips_the_finados_holiday():
     assert status["today"] == "09:00–13:00"
     # Sunday is closed and Monday 2026-11-02 is Finados.
     assert status["next_opening"] == "terça, 03/11/2026, 09:00"
+
+
+@pytest.mark.parametrize(
+    ("day", "hours"),
+    [
+        (date(2026, 11, 2), "closed (Finados)"),  # asked on Saturday 31/10
+        (date(2026, 11, 20), "closed (Dia Nacional de Zumbi e da Consciência Negra)"),
+        (date(2026, 11, 3), "09:00–18:00"),
+        (date(2026, 11, 7), "09:00–13:00"),
+        (date(2026, 11, 8), "closed (domingo)"),
+    ],
+)
+def test_another_day_has_its_own_hours(day, hours):
+    status = store_status(at(2026, 10, 31, 10, 0), day)
+    assert status["day"] == {"date": status["day"]["date"], "hours": hours}
+    assert status["today"] == "09:00–13:00"  # today is unchanged
+
+
+def test_a_day_past_the_holiday_list_says_so():
+    status = store_status(at(2026, 10, 31, 10, 0), date(2027, 2, 1))
+    assert "not known" in status["day"]["note"]
 
 
 def test_holiday_is_named():

@@ -9,7 +9,7 @@ No tool call can crash the conversation.
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -57,7 +57,9 @@ class GetPolicy(_Input):
 
 
 class StoreStatus(_Input):
-    pass
+    day: date | None = Field(
+        None, description="A date to check (YYYY-MM-DD), such as tomorrow; omit for today only."
+    )
 
 
 class HandoffToHuman(_Input):
@@ -93,7 +95,7 @@ DESCRIPTIONS = {
     ),
     "store_status": (
         "Current date and time in Campo Grande, whether the store is open now, and when it "
-        "opens next. Holidays included."
+        "opens next. With 'day', also that day's hours. Holidays included."
     ),
     "handoff_to_human": (
         "Register a handoff to the human team and get a protocol number. Use for complaints, "
@@ -169,7 +171,7 @@ class Toolbox:
             case "get_policy":
                 return self.policies.get(args.section)
             case "store_status":
-                return store_status(self.clock())
+                return store_status(self.clock(), args.day)
             case "handoff_to_human":
                 return handoff_to_human(
                     args.reason, args.summary, args.contact, self.clock(), self.handoff_log

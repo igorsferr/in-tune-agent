@@ -65,3 +65,9 @@ def test_a_crashing_tool_does_not_raise(toolbox, monkeypatch):
 def test_clock_drives_time_dependent_tools(toolbox):
     status, _ = toolbox.run("store_status", {})
     assert status["now"] == "sábado, 31/10/2026, 15:00"
+
+
+def test_store_status_takes_a_date_as_text(toolbox):
+    status, is_error = toolbox.run("store_status", {"day": "2026-11-02"})
+    assert not is_error
+    assert status["day"]["hours"] == "closed (Finados)"
