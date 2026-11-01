@@ -92,7 +92,7 @@
         "Vocês têm violino ou saxofone?"
       ],
       "include": [
-        "nao (temos|tenho|trabalhamos|vendemos|encontrei|achei)"
+        "nao (tem|temos|tenho|trabalhamos|vendemos|encontrei|achei)"
       ],
       "exclude": [
         "(posso|quer|quiser|gostaria|temos|opcoes|trabalhamos com)[^.!?\\n]{0,80}(sopro|metais|madeiras|orquestra)"
