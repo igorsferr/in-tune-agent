@@ -1,5 +1,5 @@
 {
-  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9). The cases in group \"audit\" were added for issue #12 from the pre-submission audit's customer messages, with one change: \"800 reais\" became \"R$ 800\", because the grader reads only amounts written with \"R$\". They were committed before any run, and their first run is on the code before the fixes; a case that passes there is recorded as not reproduced and stays. English and Spanish cases carry the same checks as the Portuguese ones, in that language; the English order case keeps the Portuguese promise exclusions too. holiday-tomorrow-closed and holiday-next-monday-closed were added after the baseline, before any fix, because holiday-tomorrow passed with replies that said the store opens on the holiday; they require the reply to say the store is closed. After the final run (26ce49b), a coverage review changed the criteria, and this is not a PLAN §8 rule-5 change: long-conversation-shipping was replaced by long-conversation-ukulele-alone, which keeps its first nine turns, then drops the guitar and checks that the ukulele alone pays R$ 35,00 (the old case never left the free-shipping range); split-payment-above-threshold was added as the positive side of the R$ 2.000,00 rule. Earlier result files keep the old case and were graded with the old criteria; the new cases ran only on the code after the fixes.",
+  "_about": "Post-decision regression set, added after the PR #9 review. The model was chosen on cases.json, which stays as it was when the decision was made (PLAN §8, rule 5). These cases repeat customer messages from cases.json with stricter checks, plus one new case, and are run on the chosen model only: they guard the behaviour, they do not re-open the choice. Same format and grading as cases.json. Promise exclusions are shared across the handoff cases; each case drops the ones the manual itself supports (a complaint has a 24-business-hour return time, §7.3; a customer may ask for data deletion by WhatsApp or e-mail, §9). The cases in group \"audit\" were added for issue #12 from the pre-submission audit's customer messages, with one change: \"800 reais\" became \"R$ 800\", because the grader reads only amounts written with \"R$\". They were committed before any run, and their first run is on the code before the fixes; a case that passes there is recorded as not reproduced and stays. English and Spanish cases carry the same checks as the Portuguese ones, in that language; the English order case keeps the Portuguese promise exclusions too. holiday-tomorrow-closed and holiday-next-monday-closed were added after the baseline, before any fix, because holiday-tomorrow passed with replies that said the store opens on the holiday; they require the reply to say the store is closed. After the final run (26ce49b), a coverage review changed the criteria, and this is not a PLAN §8 rule-5 change: long-conversation-shipping was replaced by long-conversation-ukulele-alone, which keeps its first nine turns, then drops the guitar and checks that the ukulele alone pays R$ 35,00 (the old case never left the free-shipping range); split-payment-above-threshold was added as the positive side of the R$ 2.000,00 rule. Earlier result files keep the old case and were graded with the old criteria; the new cases ran only on the code after the fixes. After the PR #14 review, two patterns changed, again after results and not under rule 5: split-payment-above-threshold now needs an explicit yes and rejects \"não dá\"/\"não aceitamos\" (its old include matched almost any text), and colour-not-denied accepts \"não encontrei bateria azul\", as issue #12 allows. Every stored reply of these two cases grades the same under the new patterns.",
   "cases": [
     {
       "id": "overdue-order-no-promise",
@@ -179,11 +179,12 @@
       ],
       "include": [
         "2\\.000",
-        "\\b(pode|da|e possivel|permitid\\w*|aceit\\w*)\\b"
+        "(da|pode)[ ,]+sim\\b|(pagamento misto|combinar|dividir)[^.!?\\n]{0,40}(aceito|permitido|possivel)"
       ],
       "exclude": [
         "nao (e |esta )?(permitido|aceito|possivel)[^.!?\\n]{0,30}(misto|misturar|dividir|combinar)",
         "(pagamento misto|misturar|dividir|combinar)[^.!?\\n]{0,30}nao (e |esta )?(permitido|aceito|possivel)",
+        "\\bnao (da|aceitamos|pode|e possivel)\\b[^.!?\\n]{0,40}(pix|cartao|misto|dividir|combinar)",
         "a loja nao (aceita|permite|trabalha com) pagamento misto",
         "(?<!nao )\\b(quer|deseja|gostaria de|posso|vamos)\\b[^.!?\\n]{0,25}\\b(fechar|reservar|reserve|separar|separe)\\b"
       ]
@@ -369,12 +370,12 @@
         "Tem bateria azul?"
       ],
       "include": [
-        "yamaha kit 1|nao (consigo|consegui|tenho como) confirmar"
+        "yamaha kit 1|nao (consigo|consegui|tenho como) confirmar|nao (encontrei|achei)[^.!?\\n]{0,30}azul"
       ],
       "exclude": [
         "nao (temos|tem|vendemos|trabalhamos com)[^.!?\\n]{0,20}azul",
         "azul[^.!?\\n]{0,15}nao (temos|tem)\\b",
-        "nenhuma[^.!?\\n]{0,30}azul"
+        "nenhuma (delas|das baterias)[^.!?\\n]{0,20}(e|vem|esta|tem)[^.!?\\n]{0,10}azul"
       ]
     },
     {
