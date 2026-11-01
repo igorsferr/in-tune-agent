@@ -15,12 +15,16 @@ Needs Python ≥ 3.11, [uv](https://docs.astral.sh/uv/) and an Anthropic API key
 
 ```bash
 uv sync
-cp .env.example .env          # then set ANTHROPIC_API_KEY
+cp .env.example .env          # Windows cmd: copy; then set ANTHROPIC_API_KEY
 uv run in-tune                # chat in the terminal; add --show-tools to see each tool call
 uv run pytest                 # 155 tests, no API calls
+uv run python evals/run_evals.py --models claude-sonnet-5-5 --repeat 2   # the eval set
 ```
 
 Options: `--model` (default `claude-sonnet-5-5`), `--effort low|medium|high`, and `--now 2026-11-03T10:00` to fix the store clock.
+- **Without a key:** read [`examples/`](examples/); `uv run pytest` needs none.
+- Sonnet and Opus requests use Anthropic's server-side fallback beta (`server-side-fallback-2026-07-01`). If a key rejects it with a 400, `--model claude-haiku-5-5` runs without it.
+- A key the API rejects also prints "Nenhuma credencial da Anthropic encontrada", so check its value too.
 
 ## How it works
 
@@ -77,11 +81,11 @@ Haiku resisted the prompt injection, but the case also required quoting the real
 
 ## Examples
 
-Five real conversations with the agent, each in the original Portuguese with a full English translation:
+Five real conversations with the agent, each in the original Portuguese with a full English translation. The store clock is fixed at Tuesday 2026-11-03 10:00 (`--now`), so "today" in the replies is that day:
 
 1. [Guitars up to R$ 1.000, then installments and PIX](examples/01-violoes-ate-1000.md)
 2. [A misspelled model, then 12x](examples/02-takamine-gd20.md)
-3. [Address, then the right to return](examples/03-endereco-e-devolucao.md)
+3. [Address, the right to return, then strings and an off-topic question](examples/03-endereco-e-devolucao.md)
 4. [An overdue order: identity check, then handoff](examples/04-pedido-atrasado.md)
 5. [A product whose data contradicts itself](examples/05-baixo-5-cordas.md)
 

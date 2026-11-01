@@ -2,6 +2,8 @@
 
 Model `claude-sonnet-5-5`, effort medium · commit `79e11fe` · src tree `f8476c1` · data tree `d0596f2` · store clock fixed at 2026-11-03 10:00 (Campo Grande) · run at 2026-10-31 18:13 (Campo Grande)
 
+*Note added after generation: this example is kept on purpose. The product's data contradicts itself, and the first reply shows a known limitation: it opens with "temos sim" (yes, we have) before saying it cannot confirm the strings (README, Known limitations).*
+
 **Cliente:** Vocês têm baixo de 5 cordas?
 
 - `store_status({})`
