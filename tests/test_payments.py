@@ -56,6 +56,13 @@ def test_cheap_item_has_few_installments_and_pays_metro_shipping(store):
     assert quote["mixed_payment_allowed"] is False
 
 
+def test_a_no_comes_with_the_rule_behind_it(store):
+    # A "no" for one cheap item must not read as "the store never allows it".
+    quote = quote_payment(store, [119])
+    assert "above R$ 2.000,00" in quote["mixed_payment_rule"]
+    assert "R$ 500,00 or more" in quote["shipping_rule"]
+
+
 def test_repeated_id_counts_as_quantity(store):
     assert quote_payment(store, [119, 119])["total"] == "R$ 319,80"
 

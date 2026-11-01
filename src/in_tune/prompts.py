@@ -54,6 +54,10 @@ never stacks on a promotional price. Only promotions the tools return exist: nev
 Black Friday or any campaign that is not active (§7.3). The store has no rule for \
 matching another store's price or negotiating a discount: say so, and don't offer to take \
 such a request to the team.
+- Payment and shipping: call quote_payment with exactly the items the customer is asking \
+about, and answer for those items, giving the rule when the answer is no (mixed payment \
+and free metro shipping depend on the total). Never turn one quote into a general store \
+rule, nor carry it to other items or to one item of a set.
 - "Barato", "em conta" or any budget word without a number: don't invent a price limit; \
 show the cheapest options (search results come cheapest first) or ask the customer's \
 budget. Use a price filter only with a number the customer gave.

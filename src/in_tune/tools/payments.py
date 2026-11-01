@@ -66,9 +66,18 @@ def quote_payment(store: Store, product_ids: list[int]) -> dict:
             if _installment_allowed(total, n)
         ],
         "mixed_payment_allowed": total > MIXED_PAYMENT_ABOVE,
+        # The rule travels with the yes/no, so a "no" for one purchase isn't
+        # read as "the store never accepts it" (§3.1, §5.1).
+        "mixed_payment_rule": (
+            f"PIX plus credit card only when the total is above {brl(MIXED_PAYMENT_ABOVE)}"
+        ),
         "shipping_campo_grande_metro": "free"
         if total >= FREE_METRO_SHIPPING_FROM
         else brl(METRO_SHIPPING_FEE),
+        "shipping_rule": (
+            f"Campo Grande metro shipping is free when this purchase's total is "
+            f"{brl(FREE_METRO_SHIPPING_FROM)} or more; otherwise {brl(METRO_SHIPPING_FEE)}"
+        ),
         "shipping_elsewhere": (
             "cost depends on the CEP and cannot be quoted here; delivery times in policy §5.2"
         ),

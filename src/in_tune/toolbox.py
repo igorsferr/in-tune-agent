@@ -84,7 +84,8 @@ DESCRIPTIONS = {
     ),
     "quote_payment": (
         "Totals for each payment method, the allowed credit-card installments, whether mixed "
-        "payment is allowed, and Campo Grande metro shipping, for the given products."
+        "payment is allowed, and Campo Grande metro shipping, for the given products. The "
+        "answers hold for this set of products only; the *_rule fields say what they depend on."
     ),
     "get_policy": (
         "Text of a section of the store's policy manual: hours, contact, payment, returns, "
